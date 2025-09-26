@@ -6,6 +6,9 @@
 
 This repository provides a comprehensive learning resource for Vulkan ray tracing, featuring a **progressive step-by-step tutorial** that transforms a rasterization application into a fully functional ray tracing implementation. The tutorial demonstrates practical integration of [`ray tracing`](https://www.khronos.org/registry/vulkan/specs/1.2-extensions/html/vkspec.html#ray-tracing) and [`ray traversal`](https://www.khronos.org/registry/vulkan/specs/1.2-extensions/html/vkspec.html#ray-traversal) using the [`VK_KHR_acceleration_structure`](https://www.khronos.org/registry/vulkan/specs/1.2-extensions/html/vkspec.html#VK_KHR_acceleration_structure), [`VK_KHR_ray_tracing_pipeline`](https://www.khronos.org/registry/vulkan/specs/1.2-extensions/html/vkspec.html#VK_KHR_ray_tracing_pipeline) and [`VK_KHR_ray_query`](https://www.khronos.org/registry/vulkan/specs/1.2-extensions/html/vkspec.html#VK_KHR_ray_query) extensions.
 
+Looking for the original version?  
+Check out the [legacy Vulkan ray tracing tutorial (pre-v2.0)](https://github.com/nvpro-samples/vk_raytracing_tutorial_KHR/tree/master).
+
 ## Quick Start
 
 ### Prerequisites
@@ -22,10 +25,6 @@ This repository provides a comprehensive learning resource for Vulkan ray tracin
 # Clone repositories
 git clone https://github.com/nvpro-samples/nvpro_core2.git
 git clone https://github.com/nvpro-samples/vk_raytracing_tutorial_KHR.git
-
-# Switch to v2 branch (required)
-cd vk_raytracing_tutorial_KHR
-git checkout v2
 
 # Build
 cmake -B build -S .
