@@ -5,6 +5,9 @@ By [Martin-Karl Lefrançois](https://devblogs.nvidia.com/author/mlefrancois/),
    [Pascal Gautron](https://devblogs.nvidia.com/author/pgautron/), Nia Bickford, David Akeley
 </small>
 
+!!! Warning
+    This tutorial is the old version of the tutorial, the new version is [here](https://github.com/nvpro-samples/vk_raytracing_tutorial_KHR/tree/v2/raytrace_tutorial/docs/raytrace_tutorial.md).
+
 
 The focus of this document and the provided code is to showcase a basic integration of
 ray tracing within an existing Vulkan sample, using the
@@ -12,7 +15,7 @@ ray tracing within an existing Vulkan sample, using the
 extension. This tutorial starts from a basic Vulkan application and provides step-by-step instructions to modify and add
 methods and functions. The sections are organized by components, with subsections identifying the modified functions.
 
-![Final Result](Images/resultRaytraceShadowMedieval.png width="350px")
+![Final Result](images/resultRaytraceShadowMedieval.png width="350px")
 
 !!! Note GitHub repository 
     https://github.com/nvpro-samples/vk_raytracing_tutorial_KHR
@@ -91,7 +94,7 @@ load OBJ files and rasterize them using Vulkan. You can find an overview of how 
 see [Base Overview](https://github.com/nvpro-samples/vk_raytracing_tutorial_KHR/blob/master/ray_tracing__before/README.md#nvidia-vulkan-ray-tracing-tutorial).
 We will enable ray tracing using this framework, which can load geometries and render scenes. 
 
-![First Run](Images/resultRasterCube.png width="350px")
+![First Run](images/resultRasterCube.png width="350px")
 
 
 The following steps in the tutorial will be modifying this project 
@@ -197,7 +200,7 @@ with its own transformation matrix and reference to a corresponding BLAS.
 We will start with a single bottom-level AS and a top-level AS instancing it once with an identity transform.
 
 
-![Figure [step]: Acceleration Structure](Images/AccelerationStructure.svg)
+![Figure [step]: Acceleration Structure](/docs/images/AccelerationStructure.svg)
 
 This sample loads an OBJ file and stores its indices, vertices and material data into an `ObjModel` structure. This
 model is referenced by an `ObjInstance` structure which also contains the transformation matrix of that particular
@@ -1172,7 +1175,7 @@ Two more shader types can optionally be used:
   determine which ray intersection is the closest. For this example, such shaders will never be invoked as we specified the
   opaque flag while building the acceleration structures.
 
-![Figure [step]: The Ray Tracing Pipeline](Images/ShaderPipeline.svg)
+![Figure [step]: The Ray Tracing Pipeline](/docs/images/ShaderPipeline.svg)
 
 We will start with a pipeline containing only the 3 main shader programs: a single ray generation shader, a single miss
 shader, and a single hit group made only of a closest hit shader. This is done by first compiling each GLSL shader
@@ -1446,7 +1449,7 @@ The SBT is a collection of up to four arrays containing the handles of the shade
 
 The buffer will have the following structure, which will be used later when calling `vkCmdTraceRaysKHR`:
 
-![](Images/sbt_0.png)
+![](/docs/images/sbt_0.png)
 
 We will ensure that all starting groups start with an address aligned to `shaderGroupBaseAlignment` and that each entry in the group is aligned to `shaderGroupHandleAlignment` bytes. 
 All group entries are aligned with `shaderGroupHandleAlignment`. 
@@ -1729,7 +1732,7 @@ flat gray image: the simplistic ray generation shader does not trace any ray yet
 
 Raster                         |     | Ray Trace 
 :-----------------------------:|:---:|:--------------------------------:
-![](Images/resultRasterCube.png width="350px")   | <-> |   ![](Images/resultRaytraceEmptyCube.png width="350px")
+![](images/resultRasterCube.png width="350px")   | <-> |   ![](images/resultRaytraceEmptyCube.png width="350px")
 
 # Camera Matrices
 
@@ -1883,7 +1886,7 @@ Finally, we write the resulting payload into the output image.
 
 Raster                         |     | Ray Trace
 :-----------------------------:|:---:|:--------------------------------:
-![](Images/resultRasterCube.png width="350px")   | <-> |   ![](Images/resultRaytraceFlatCube.png width="350px")
+![](images/resultRasterCube.png width="350px")   | <-> |   ![](images/resultRaytraceFlatCube.png width="350px")
 
 !!!NOTE `rayPayloadEXT` locations
     The `location` qualifiers are used to give payloads a unique identifier
@@ -2057,7 +2060,7 @@ direction, giving a simple diffuse lighting effect:
   }
 ~~~~
 
-![](Images/resultRaytraceLightGreyCube.png width="350px") 
+![](images/resultRaytraceLightGreyCube.png width="350px") 
 
 
 # Simple Materials
@@ -2123,7 +2126,7 @@ The final lighting is then computed as
   prd.hitValue = vec3(lightIntensity * (diffuse + specular));
 ~~~~
 
-![](Images/resultRaytraceLightMatCube.png width="350px") 
+![](images/resultRaytraceLightMatCube.png width="350px") 
 
 
 ## main
@@ -2142,7 +2145,7 @@ Since that model is larger, we can change the `CameraManip.setLookat` call to
 CameraManip.setLookat(glm::vec3(4, 4, 4), glm::vec3(0, 1, 0), glm::vec3(0, 1, 0));
 ~~~~
 
-![](Images/resultRaytraceLightMatMedieval.png)
+![](/docs/images/resultRaytraceLightMatMedieval.png)
 
 # Shadows
 
@@ -2228,7 +2231,7 @@ The pipeline now has to allow shooting rays from the closest hit program, which 
 
 The addition of the new miss shader group has modified our shader binding table, which now looks like:
 
-![](Images/sbt_1.png)
+![](/docs/images/sbt_1.png)
 
 Therefore, we have to change `HelloVulkan::createRtShaderBindingTable` to indicate that there are two miss shaders. 
 
@@ -2327,7 +2330,7 @@ The final payload value can then be adjusted depending on the result of the shad
 prd.hitValue = vec3(lightIntensity * attenuation * (diffuse + specular));
 ~~~~
 
-![](Images/resultRaytraceShadowMedieval.png) 
+![](/docs/images/resultRaytraceShadowMedieval.png) 
 
 The final project can be found under the [ray_tracing__simple](https://github.com/nvpro-samples/vk_raytracing_tutorial_KHR/tree/master/ray_tracing__simple) directory.
 

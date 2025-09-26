@@ -1,72 +1,47 @@
-cmake_minimum_required(VERSION 3.9.6 FATAL_ERROR)
-project(vk_raytracing_tutorial)
+cmake_minimum_required(VERSION 3.22...3.31)
+project(vk_raytracing_tutorial VERSION 2.0 LANGUAGES C CXX)
 
-#--------------------------------------------------------------------------------------------------
-# look for nvpro_core 1) as a sub-folder 2) at some other locations
-# this cannot be put anywhere else since we still didn't find setup.cmake yet
-if(NOT BASE_DIRECTORY)
+# Add the cmake folder to the module path
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+find_package(NvproCore2 REQUIRED)
 
-  find_path(BASE_DIRECTORY
-    NAMES nvpro_core/cmake/setup.cmake
-    PATHS ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/.. ${CMAKE_CURRENT_SOURCE_DIR}/../.. 
-    REQUIRED
-    DOC "Directory containing nvpro_core"
-    )
-endif()
+# Include the RtTutorial common functions
+include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/RtTutorial.cmake")
 
-## Various functions and macros REQUIRED
-if(EXISTS ${BASE_DIRECTORY}/nvpro_core/cmake/setup.cmake)
-  include(${BASE_DIRECTORY}/nvpro_core/cmake/setup.cmake)
-  include(${BASE_DIRECTORY}/nvpro_core/cmake/utilities.cmake)
-else()
-  message(FATAL_ERROR "could not find base directory, please set BASE_DIRECTORY to folder containing nvpro_core")
-endif()
-
-set(TUTO_KHR_DIR ${CMAKE_CURRENT_SOURCE_DIR})
-
-if(MSVC)
-    add_definitions(/wd26812)  # 'enum class' over 'enum'
-    add_definitions(/wd26451)  # Arithmetic overflow, casting 4 byte value to 8 byte value
-endif()
-
-#--------------------------------------------------------------------------------------------------
-# Package shared by all projects
-_add_package_VulkanSDK()
-_add_package_ImGUI()
-_add_nvpro_core_lib()
-
-message(STATUS "COPY ${CMAKE_CURRENT_SOURCE_DIR}/media  to  ${OUTPUT_PATH}")
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/media DESTINATION ${OUTPUT_PATH})
+set(ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+set(COMMON_DIR "${CMAKE_CURRENT_SOURCE_DIR}/common")
+set(TUTO_DIR "${CMAKE_CURRENT_SOURCE_DIR}/raytrace_tutorial")
 
 
-#--------------------------------------------------------------------------------------------------
-# Sub examples
-add_subdirectory(ray_tracing__advance) 
-add_subdirectory(ray_tracing__before) 
-add_subdirectory(ray_tracing__simple)
+# Add common library first as other samples might depend on it
+add_subdirectory(common)
 
-add_subdirectory(ray_tracing_animation)
-add_subdirectory(ray_tracing_anyhit)
-add_subdirectory(ray_tracing_callable)
-add_subdirectory(ray_tracing_gltf)
-add_subdirectory(ray_tracing_instances)
-add_subdirectory(ray_tracing_intersection)
-add_subdirectory(ray_tracing_jitter_cam)
-add_subdirectory(ray_tracing_manyhits)
-add_subdirectory(ray_tracing_rayquery)
-add_subdirectory(ray_tracing_reflections)
-add_subdirectory(ray_tracing_ao)
-add_subdirectory(ray_tracing_indirect_scissor)
-add_subdirectory(ray_tracing_specialization)
-add_subdirectory(ray_tracing_advanced_compilation)
-add_subdirectory(ray_tracing_motionblur)
+add_subdirectory(raytrace_tutorial/01_foundation)
+add_subdirectory(raytrace_tutorial/02_basic)
+add_subdirectory(raytrace_tutorial/02_basic_nvvk)
+add_subdirectory(raytrace_tutorial/03_any_hit)
+add_subdirectory(raytrace_tutorial/04_jitter_camera)
+add_subdirectory(raytrace_tutorial/05_shadow_miss)
+add_subdirectory(raytrace_tutorial/06_reflection)
+add_subdirectory(raytrace_tutorial/07_multi_closest_hit)
+add_subdirectory(raytrace_tutorial/08_intersection)
+add_subdirectory(raytrace_tutorial/09_motion_blur)
+add_subdirectory(raytrace_tutorial/10_position_fetch)
+add_subdirectory(raytrace_tutorial/11_shading_execution_reorder)
+add_subdirectory(raytrace_tutorial/12_infinite_plane)
+add_subdirectory(raytrace_tutorial/13_callable_shader)
+add_subdirectory(raytrace_tutorial/14_animation)
+add_subdirectory(raytrace_tutorial/15_micro_maps_opacity)
+add_subdirectory(raytrace_tutorial/XX_template)
+
+# Make Visual Studio use this project as the startup project
+set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT 01_foundation)
+
+# Install the resources and nvshaders folders
+install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/resources" DESTINATION ${CMAKE_INSTALL_PREFIX})
+install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/common/shaders" DESTINATION ${CMAKE_INSTALL_PREFIX}/common)
+install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/common/io_gltf.h" DESTINATION ${CMAKE_INSTALL_PREFIX}/common)
+install(DIRECTORY "${NVSHADERS_DIR}/nvshaders" DESTINATION ${CMAKE_INSTALL_PREFIX})
+install(FILES ${Slang_GLSLANG} DESTINATION ${CMAKE_INSTALL_PREFIX})
 
 
-#--------------------------------------------------------------------------------------------------
-# Install - copying the media directory
-install(DIRECTORY "media" 
-        CONFIGURATIONS Release 
-        DESTINATION "bin_${ARCH}")
-install(DIRECTORY "media" 
-        CONFIGURATIONS Debug 
-        DESTINATION "bin_${ARCH}_debug")

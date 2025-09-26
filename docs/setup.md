@@ -1,65 +1,87 @@
+# Setup Guide
 
-# Environment Setup
+This guide will help you set up a working copy of the foundation sample for the Vulkan Ray Tracing Tutorial.
 
+## Important: Create a Working Copy
 
-## Repositories
+Before starting this tutorial, **create a copy of the `01_foundation` directory** to work with:
 
-Besides the current repository, you will also need to clone or download the following repositories:
+```bash
+# Navigate to the raytrace_tutorial directory
+cd raytrace_tutorial
+``` 
 
-* [nvpro_core](https://github.com/nvpro-samples/nvpro_core): The primary framework that all samples depend on.
+Create a working copy of the foundation sample
 
-Cloning all repositories 
+```bash
+# Linux
+cp -r 01_foundation 01_foundation_copy
+# Windows
+xcopy 01_foundation 01_foundation_copy /S /E
+``` 
 
-~~~~~
-git clone --recursive --shallow-submodules https://github.com/nvpro-samples/nvpro_core.git
-git clone https://github.com/nvpro-samples/vk_raytracing_tutorial_KHR.git
-~~~~~
+## Why Create a Copy?
 
-The directory structure should be looking like this:
-
-~~~~
-   C:\Vulkan\nvpro-samples
-   | 
-   +---nvpro_core
-   +---vk_raytracing_tutorial_KHR
-   |   +---ray_tracing__simple
-   |   +---ray_tracing_...
-   |   \---...   
-~~~~
-
-See also [build_all](https://github.com/nvpro-samples/build_all) from nvpro-samples.
-
-## Latest Vulkan SDK
-
-This repository tries to always be up to date with the latest Vulkan SDK, therefore we suggest to download and install it.
-Version 1.2.162.0 and up has ray tracing extensions support.
-
-**Vulkan SDK**: https://vulkan.lunarg.com/sdk/home
+- **Preserves Original**: Keeps `01_foundation` intact for reference
+- **Easy Comparison**: Compare your progress with the original implementation
+- **Clean Starting Point**: Fresh copy for each phase
+- **Easy Rollback**: Can restart from clean state if needed
+- **Reference Material**: Original serves as a working example
 
 
-## Driver
+## CMakeLists.txt Modification
 
-NVIDIA driver 450.0 and up support Vulkan ray tracing. 
+You need to add the new project to the main CMakeLists.txt. Insert this line after the original foundation project:
 
-* Standard driver: https://www.nvidia.com/Download/index.aspx
-* Vulkan beta driver: https://developer.nvidia.com/vulkan-driver
+```cmake
+add_subdirectory(raytrace_tutorial/01_foundation)
+add_subdirectory(raytrace_tutorial/01_foundation_copy)
+add_subdirectory(raytrace_tutorial/02_basic)
+```
 
+## Working Directory Structure
 
-## CMake
+After creating the copy, your directory should look like this:
 
-The CMakefile will use other makefiles from `nvpro_core` and look for Vulkan environment variables for the installation of the SDK. Therefore, it is important to have all the above installed before running Cmake in the 
-`vk_raytracing_tutorial_KHR` directory.
+```
+raytrace_tutorial/
+├── 01_foundation/                    # Original (don't modify)
+│   ├── 01_foundation.cpp
+│   ├── shaders/
+│   │   ├── foundation.slang
+│   │   └── shaderio.h
+│   ├── CMakeLists.txt
+│   └── README.md
+├── 01_foundation_copy/               # Your working copy
+│   ├── 01_foundation.cpp             # Main file to modify
+│   ├── shaders/                      # Will add rtbasic.slang
+│   │   ├── foundation.slang         
+│   │   └── shaderio.h
+│   ├── CMakeLists.txt
+│   └── README.md
+├── 02_basic/                         # Reference implementation
+│   ├── 02_basic.cpp
+│   ├── shaders/
+│   │   ├── rtbasic.slang
+│   │   └── shaderio.h
+│   └── CMakeLists.txt
+└── docs/
+    └── rt_tutorial_progressive.md   # Main tutorial (includes setup instructions)
+```
 
-**Note:** Ray tracing only works with 64 bit environment. Therefore, make sure to choose the right build environment.
+## Build Verification
 
-**Note:** If you are using your own Vulkan header files, it is possible to overide the default search path.
-  Modify `VULKAN > VULKAN_HEADERS_OVERRIDE_INCLUDE_DIR` to the path to beta vulkan headers.
+Since this is a unified build system, you only need to rebuild from the root directory:
 
-## Starting From Extra Tutorial
+```bash
+# From the project root directory
+cmake -B build -S .
+cmake --build build -j 8
+```
 
-All _extra_ tutorials are starting from the end result of the _first tutorial_. The directory of the _extra_ tutorials is the end result of doing it. 
+This will build all projects including both:
 
-To start the tutorial from the begining.
+- `01_foundation` (original)
+- `01_foundation_copy` (your working copy)
 
-* Make a copy of the ray_tutorial__simple (backup)
-* Follow the tutorial by modifying ray_tutorial__simple
+Both should produce identical results initially.
