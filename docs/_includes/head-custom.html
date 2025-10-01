@@ -2,12 +2,13 @@
 <script>
   document.addEventListener('DOMContentLoaded', function() {
     mermaid.initialize({
-      startOnLoad: true,
+      startOnLoad: false,
       theme: 'neutral',
       flowchart: {
         useMaxWidth: false,
         htmlLabels: true
       }
     });
+    mermaid.run({ querySelector: 'code.language-mermaid' });
   });
 </script>
