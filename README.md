@@ -47,7 +47,7 @@ This repository provides a comprehensive, step-by-step tutorial that demonstrate
 ---
 <div align="center">
 
-# 🚀 [**BEGIN THE TUTORIAL**](/docs/index.md) 🚀
+# 🚀 [**BEGIN THE TUTORIAL**](https://nvpro-samples.github.io/vk_raytracing_tutorial_KHR/) 🚀
 
 </div>
 
