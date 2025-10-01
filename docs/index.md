@@ -1,4 +1,9 @@
-# Vulkan Ray Tracing Tutorial: Progressive Conversion from Rasterization to Ray Tracing
+# Vulkan Ray Tracing Tutorial (v2)
+## Progressive Conversion from Rasterization to Ray Tracing
+
+| Before | After |
+| ------ | ----- |
+| ![](images/01.png) | ![](images/02.png) |
 
 ## Introduction
 
