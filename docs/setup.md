@@ -66,7 +66,7 @@ raytrace_tutorial/
 │   │   └── shaderio.h
 │   └── CMakeLists.txt
 └── docs/
-    └── rt_tutorial_progressive.md   # Main tutorial (includes setup instructions)
+    └── index.md   # Main tutorial (includes setup instructions)
 ```
 
 ## Build Verification

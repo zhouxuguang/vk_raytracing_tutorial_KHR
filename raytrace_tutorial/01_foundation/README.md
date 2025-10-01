@@ -101,6 +101,6 @@ This foundation can be extended with:
 ## Related Documentation
 
 For detailed conversion information:
-- **[Ray Tracing Tutorial](/docs/rt_tutorial_progressive.md)** - Step-by-step conversion guide
+- **[Ray Tracing Tutorial](/docs/index.md)** - Step-by-step conversion guide
 - **[Acceleration Structures Guide](/docs/acceleration_structures.md)** - BLAS/TLAS construction and management
 - **[Shader Binding Table Guide](/docs/shader_binding_table.md)** - SBT creation and alignment

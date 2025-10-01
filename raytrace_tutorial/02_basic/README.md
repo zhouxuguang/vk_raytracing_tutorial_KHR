@@ -82,7 +82,7 @@ This basic implementation enables:
 
 ## Next Steps
 
-For step-by-step conversion guide, see [rt_tutorial](/docs/rt_tutorial_progressive.md)
+For step-by-step conversion guide, see [rt_tutorial](/docs/index.md)
 
 This basic implementation can be extended with:
 - **[03_any_hit](../03_any_hit)** - for transparency and alpha testing
@@ -98,5 +98,5 @@ For detailed information about the core ray tracing components:
 
 - **[Acceleration Structures Guide](/docs/acceleration_structures.md)** - Comprehensive guide to BLAS/TLAS construction, memory management, and optimization
 - **[Shader Binding Table Guide](/docs/shader_binding_table.md)** - Complete reference for SBT creation, alignment, and advanced usage patterns
-- **[Ray Tracing Tutorial](/docs/rt_tutorial_progressive.md)** - Step-by-step progressive conversion guide from rasterization to ray tracing
+- **[Ray Tracing Tutorial](/docs/index.md)** - Step-by-step progressive conversion guide from rasterization to ray tracing
 

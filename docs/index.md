@@ -1019,7 +1019,7 @@ We are not yet using the acceleration structures, but since they have been creat
 - Search for and select `RtBasic::createTopLevelAS::m_tlasAccel.accel`.
 - Click "Open in Ray Tracing Inspector" to view the acceleration structure.
 
-![ns](/docs/images/nsight-as1.jpg)
+![ns](images/nsight-as1.jpg)
 
 ### What's Next
 
@@ -1808,7 +1808,7 @@ Note: The rasterization mode only reloads the shader modules, not the entire gra
 - Background appears gray (from the miss shader)
 - Scene geometry is properly ray traced (objects should be visible and correctly positioned)
 
-![Phase6_result](/docs/images/Phase6.png)
+![Phase6_result](images/Phase6.png)
 
 **How to Test Live Shader Reloading**
 
@@ -1954,7 +1954,7 @@ void rchitMain(inout HitPayload payload, in BuiltInTriangleIntersectionAttribute
 
 If you run (reload shaders), you should see:
 
-![phase7_1](/docs/images/phase7_1.png)
+![phase7_1](images/phase7_1.png)
 
 #### Step 7.2: Enhanced Miss Shader
 
@@ -1991,7 +1991,7 @@ At this point, it is possible to change the background color or use the sun and 
 
 | Solid Color | Sun & Sky |
 |--|--|
-|![phase7_2_1](/docs/images/phase7_2_1.png) | ![phase7_2_2](/docs/images/phase7_2_2.png)|
+|![phase7_2_1](images/phase7_2_1.png) | ![phase7_2_2](images/phase7_2_2.png)|
 
 ### Phase 7 Checkpoint
 
@@ -2144,7 +2144,7 @@ payload.color = color;
 
 **Expected visual result:**
 
-![phase8_2](/docs/images/phase8_2.png)
+![phase8_2](images/phase8_2.png)
 
 ### What's Next
 

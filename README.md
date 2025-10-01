@@ -47,7 +47,7 @@ This repository provides a comprehensive, step-by-step tutorial that demonstrate
 ---
 <div align="center">
 
-# 🚀 [**BEGIN THE TUTORIAL**](/docs/rt_tutorial_progressive.md) 🚀
+# 🚀 [**BEGIN THE TUTORIAL**](/docs/index.md) 🚀
 
 </div>
 
