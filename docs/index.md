@@ -52,7 +52,7 @@ This tutorial is designed with **progressive compilation** in mind:
 
 ## Setup Instructions
 
-Before starting, make sure to do the following [setup](setup).
+Before starting, make sure to do the following [setup](setup.md).
 
 ### **Tutorial Workflow**
 
@@ -379,8 +379,8 @@ The helper libraries are used in all subsequent tutorials in this series (`02_ba
 
 You can learn more about these concepts in:
 
-- [Acceleration Structures](acceleration_structures)
-- [Shader Binding Table](shader_binding_table)
+- [Acceleration Structures](acceleration_structures.md)
+- [Shader Binding Table](shader_binding_table.md)
 
 #### Step 1.2: Add Ray Tracing Class Members
 
@@ -740,7 +740,7 @@ This approach is straightforward but not optimal for performance. In a productio
 - Build multiple acceleration structures in a single command buffer
 - Use update mode for dynamic scenes instead of rebuilding from scratch
 
-Note: The [acceleration helpers](acceleration_structures) handle all of this and more. However, to keep things simple, we are using a straightforward method here.
+Note: The [acceleration helpers](acceleration_structures.md) handle all of this and more. However, to keep things simple, we are using a straightforward method here.
 
 #### Step 2.3: Create BLAS Creation Method (Infrastructure Only)
 
@@ -860,7 +860,7 @@ In Phase 3, we'll actually build the acceleration structures using the infrastru
 
 **Expected Result**: Acceleration structures are built and ready for ray tracing. Application still uses rasterization, but now has the geometry data structures needed for ray tracing.
 
-**Documentation**: It is strongly recommended to read the [acceleration structure](acceleration_structures) document at this point. It explains the concepts and the helpers used here.
+**Documentation**: It is strongly recommended to read the [acceleration structure](acceleration_structures.md) document at this point. It explains the concepts and the helpers used here.
 
 ### Code Changes
 
@@ -1490,7 +1490,7 @@ void createRayTracingPipeline()
 
 Update the `createShaderBindingTable()` method to populate the SBT with actual shader data:
 
-**📖Documentation**: It is strongly recommended to read the [shader binding table](shader_binding_table) document at this point. It explains the concepts and implementation details.
+**📖Documentation**: It is strongly recommended to read the [shader binding table](shader_binding_table.md) document at this point. It explains the concepts and implementation details.
 
 ```cpp
 void createShaderBindingTable(const VkRayTracingPipelineCreateInfoKHR& rtPipelineInfo)
@@ -2232,8 +2232,8 @@ Check out the [complete set of tutorials](/raytrace_tutorial/).
 
 For advanced ray tracing techniques:
 
-- **[Acceleration Structures Guide](acceleration_structures)** - Comprehensive guide to BLAS/TLAS construction, memory management, and optimization
-- **[Shader Binding Table Guide](shader_binding_table)** - Complete reference for SBT creation, alignment, and advanced usage patterns
+- **[Acceleration Structures Guide](acceleration_structures.md)** - Comprehensive guide to BLAS/TLAS construction, memory management, and optimization
+- **[Shader Binding Table Guide](shader_binding_table.md)** - Complete reference for SBT creation, alignment, and advanced usage patterns
 
 ## Helper Libraries and Advanced Implementations
 
