@@ -169,6 +169,7 @@ float3 calculateLighting(float3 worldPos, float3 worldNormal, float3 albedo, flo
     float theta         = (dot(normalize(lightDir), normalize(light.direction)));
     float spotIntensity = clamp((theta - cos(light.coneAngle)) / (1.0 - cos(light.coneAngle)), 0.0, 1.0);
     light.intensity *= spotIntensity;
+    light.direction = lightDir;
   }
 
   float3 V = -WorldRayDirection();

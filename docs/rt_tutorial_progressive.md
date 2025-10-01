@@ -49,7 +49,6 @@ This tutorial is designed with **progressive compilation** in mind:
 
 Before starting, make sure to do the following [setup](/docs/setup.md).
 
-
 ### **Tutorial Workflow**
 
 **Phase-by-Phase Approach:**
@@ -206,7 +205,6 @@ This two-level hierarchy provides several key benefits:
 | **Updates** | Rarely (static geometry) | Frequently (dynamic objects) |
 | **Memory** | Large (geometry data) | Small (instance data) |
 
-
 ### Visual Diagram
 
 ```mermaid
@@ -247,7 +245,7 @@ graph BT
     style D fill:#e1f5fe
     style F fill:#e1f5fe
     style K fill:#f3e5f5
-```    
+```
 
 ## Understanding the Shader Binding Table (SBT)
 
@@ -327,12 +325,12 @@ flowchart LR
 ### Simple Example
 
 For a basic scene with one material:
+
 - **RayGen Section**: Contains handle for the ray generation shader
 - **Miss Section**: Contains handle for the background shader (gray/sky)
 - **Hit Section**: Contains handle for the material shader (PBR shading)
 
 When a ray hits geometry, the ray tracer looks up the hit shader handle from the SBT and executes the corresponding shader program.
-
 
 ## Tutorial Structure
 
@@ -365,9 +363,10 @@ Each phase includes:
 
 #### Step 1.1: Implementation Approach Overview
 
-**Note**: This tutorial uses direct Vulkan calls for educational purposes. 
+**Note**: This tutorial uses direct Vulkan calls for educational purposes.
 
 **Implementation Comparison:**
+
 - **This tutorial (`02_basic`)**: Uses direct Vulkan calls like `vkCmdBuildAccelerationStructuresKHR()` and `vkGetRayTracingShaderGroupHandlesKHR()`
 - **Helper version (`02_basic_nvvk`)**: Uses `nvvk::AccelerationStructureHelper` and `nvvk::SBTGenerator` for simplified development
 
@@ -375,9 +374,8 @@ The helper libraries are used in all subsequent tutorials in this series (`02_ba
 
 You can learn more about these concepts in:
 
-* [Acceleration Structures](/docs/acceleration_structures.md)
-* [Shader Binding Table](/docs/shader_binding_table.md)
-
+- [Acceleration Structures](/docs/acceleration_structures.md)
+- [Shader Binding Table](/docs/shader_binding_table.md)
 
 #### Step 1.2: Add Ray Tracing Class Members
 
@@ -409,8 +407,6 @@ VkPhysicalDeviceAccelerationStructurePropertiesKHR m_asProperties{
 ```
 
 These members provide everything needed for the new ray tracing pipeline: a vector to store all bottom-level acceleration structures, a top-level acceleration structure, storage for the shader binding table buffer and shader group handles, and structures to query ray tracing properties from the device.
-
-
 
 #### Step 1.3: Enable Ray Tracing Extensions
 
@@ -444,8 +440,6 @@ vkGetPhysicalDeviceProperties2(m_app->getPhysicalDevice(), &prop2);
 ```
 
 We request the ray tracing properties to determine device-specific limitations, such as acceleration structure alignment requirements. After calling `vkGetPhysicalDeviceProperties2`, you can set a breakpoint to inspect the returned property values.
-
-
 
 ### Phase 1 Checkpoint
 
@@ -519,7 +513,6 @@ void primitiveToGeometry(const shaderio::GltfMesh&                 gltfMesh,
 
 > **Note**: The `shaderio::GltfMesh` data is uploaded to a GPU buffer, so it can be accessed directly by shaders, just as it is on the host.
 
-
 #### Understanding the Three-Structure Data Flow
 
 When creating acceleration structures, Vulkan uses three key structures that work together:
@@ -565,12 +558,15 @@ flowchart TB
 ```
 
 **1. VkAccelerationStructureGeometryTrianglesDataKHR:**
+
 - Defines WHERE to read vertex/index data (device addresses) and HOW to interpret it (format, stride, etc.)
 
 **2. VkAccelerationStructureGeometryKHR:**
+
 - Wrapper that specifies WHAT type of geometry (triangles, instances, AABBs) and build flags
 
 **3. VkAccelerationStructureBuildRangeInfoKHR:**
+
 - Defines WHICH portion of the data to process (primitive count, offsets, etc.)
 
 #### Geometry Types
@@ -613,12 +609,6 @@ NVIDIA has extended the standard Vulkan ray tracing geometry types with two addi
 - Spheres swept along a linear path (capsules)
 - Geometry data: buffer of swept-sphere parameters (center, radius, velocity/direction)
 - Efficient representation of capsules and motion-blurred spheres
-
-
-
-
-
-
 
 #### Step 2.2: Create Generic Acceleration Structure Helper
 
@@ -666,7 +656,7 @@ void createAccelerationStructure(VkAccelerationStructureTypeKHR asType,  // The 
     nvvk::Buffer scratchBuffer;
     NVVK_CHECK(m_allocator.createBuffer(scratchBuffer, scratchSize,
                                         VK_BUFFER_USAGE_2_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_2_SHADER_DEVICE_ADDRESS_BIT
-                                            | VK_BUFFER_USAGE_2_ACCELERATION_STRUCTURE_STORAGE_BIT_KHR));
+                                            | VK_BUFFER_USAGE_2_ACCELERATION_STRUCTURE_STORAGE_BIT_KHR, VMA_MEMORY_USAGE_AUTO, {}, m_asProperties.minAccelerationStructureScratchOffsetAlignment));
 
     // Create the acceleration structure
     VkAccelerationStructureCreateInfoKHR createInfo{
@@ -747,7 +737,6 @@ This approach is straightforward but not optimal for performance. In a productio
 
 Note: The [acceleration helpers](/docs/acceleration_structures.md) handle all of this and more. However, to keep things simple, we are using a straightforward method here.
 
-
 #### Step 2.3: Create BLAS Creation Method (Infrastructure Only)
 
 Add this method to set up bottom-level acceleration structure creation. For now, it will just prepare the geometry data without building:
@@ -814,7 +803,6 @@ void createTopLevelAS()
 
 We are preparing the acceleration structure. For bottom-level acceleration, the vertex and index data for the geometry are already on the GPU. For the instances, we will need to do the same. Here, we are only preparing the array of instances that will later be uploaded to the GPU.
 
-
 #### Step 2.5: Call Infrastructure Setup
 
 In the `onAttach()` method, add tot the end calls to set up the infrastructure:
@@ -843,7 +831,7 @@ createTopLevelAS();     // Set up TLAS infrastructure
 
 **Expected console output:**
 
-```
+```bash
 Ready to build 2 bottom-level acceleration structures
 Ready to build top-level acceleration structure with 2 instances
 ```
@@ -902,7 +890,6 @@ void createBottomLevelAS()
 ```
 
 > **Note**: This approach creates one BLAS per mesh using our generic `createAccelerationStructure` helper. Each BLAS contains the triangle geometry for one mesh.
-
 
 #### Step 3.2: Enable TLAS Building
 
@@ -980,7 +967,6 @@ void createTopLevelAS()
 
 #### Step 3.3: Add Acceleration Structure Cleanup
 
-
 In the `onDetach()` method, add the deinitialization of the ray tracing component (before the deinitialization of the allocator)
 
 ```cpp
@@ -1013,7 +999,6 @@ RtFoundation::createBottomLevelAS  Bottom-level acceleration structures built su
 RtFoundation::createTopLevelAS  Top-level acceleration structures built successfully
 ```
 
-
 ### Acceleration Structure Details
 
 At this point, you have:
@@ -1036,7 +1021,6 @@ We are not yet using the acceleration structures, but since they have been creat
 
 ![ns](/docs/images/nsight-as1.jpg)
 
-
 ### What's Next
 
 In Phase 4, we'll create the ray tracing pipeline and shader binding table infrastructure. The acceleration structures are ready, but we need the pipeline to actually use them for ray tracing.
@@ -1058,7 +1042,6 @@ In Phase 4, we'll create the ray tracing pipeline and shader binding table infra
 
 ### Code Changes
 
-
 ### Step 4.1: Add New Bindings
 
 In `shaders\shaderio.h` add the new binding points we will need.
@@ -1074,7 +1057,6 @@ enum BindingPoints
   eTlas,          // Top-level acceleration structure
 };
 ```
-
 
 #### Step 4.2: Create Ray Tracing Descriptor Layout
 
@@ -1103,7 +1085,6 @@ void createRaytraceDescriptorLayout()
 ```
 
 > **Note**: This is a second descriptor set. The first descriptor set contains only the scene's textures. This new descriptor set adds access to the top-level acceleration structure and the output image produced by the ray tracer. In the shader, these will be accessed via `Set1`, while the textures remain in `Set0`.
-
 
 #### Step 4.3: Create Basic Ray Tracing Pipeline Structure
 
@@ -1190,7 +1171,6 @@ Next, we define three essential shader groups for the ray tracing pipeline: the 
 
 Note that at this stage, the actual ray tracing pipeline itself is not yet created—this will be implemented in the next phase.
 
-
 #### Step 4.4: Create Shader Binding Table Infrastructure
 
 Add this method to set up the SBT infrastructure:
@@ -1217,7 +1197,6 @@ void createShaderBindingTable(const VkRayTracingPipelineCreateInfoKHR& rtPipelin
 
 This is a placeholder for the shader binding table (SBT) infrastructure. In the next phase, we will create the SBT buffer and populate it with the required shader group handles and layout information. The SBT is a critical structure in Vulkan ray tracing, as it defines how rays are dispatched and which shaders are invoked for each ray type. For now, we are only setting up the buffer and reserving space; actual population with shader data will be implemented in Phase 5.
 
-
 #### Step 4.5: Call Pipeline Setup Methods
 
 In the `onAttach()` method, after the acceleration structure creation calls, add these calls to set up the ray tracing pipeline:
@@ -1239,9 +1218,7 @@ In the `onDetach()` method, mirror the destruction of the new element created
     m_rtDescPack.deinit();
     m_allocator.destroyBuffer(m_sbtBuffer);
     // .. rest of function
-```    
-
-
+```
 
 ### Phase 4 Checkpoint
 
@@ -1295,7 +1272,6 @@ In Phase 5, we'll implement the actual ray tracing shaders (ray generation, clos
 #### Step 5.1: Create Basic Ray Tracing Shader File
 
 Create a new shader file `01_foundation_copy/shaders/rtbasic.slang` with the following content:
-
 
 ```hlsl
 #include "shaderio.h"
@@ -1396,9 +1372,8 @@ void rmissMain(inout HitPayload payload)
 > **💡Note**:  
 > After adding the shader file, re-run CMake (Generate) to ensure it is included in your Visual Studio project.  
 > Then, rebuild the project to generate the `_autogen/rtbasic.slang.h` header. This header contains the compiled SPIR-V version of your shader, allowing the application to embed shaders directly and avoid relying solely on external files.  
-> 
+>
 > For convenience during development and debugging, this tutorial also supports hot-reloading the shader file at runtime—so you can edit and test shader changes without restarting the application.
-
 
 #### Step 5.1.1: Add Shader File
 
@@ -1407,7 +1382,6 @@ At the top of your CPP file, alongside the other auto-generated includes, add th
 ```cpp
 #include "_autogen/rtbasic.slang.h"     // Local shader
 ```
-
 
 #### Step 5.2: Complete Ray Tracing Pipeline Creation
 
@@ -1506,7 +1480,6 @@ void createRayTracingPipeline()
 > **Note**: Two major changes were made in this phase. First, the Slang compiler is now invoked to generate SPIR-V code, and the resulting entry points are associated with each shader group (raygen, closest hit, miss). Second, the ray tracing pipeline is created by filling out the `VkRayTracingPipelineCreateInfoKHR` structure and calling `vkCreateRayTracingPipelinesKHR`. In the next section (5.3), we will create the shader binding table, which can be automatically generated using information from the `VkRayTracingPipelineCreateInfoKHR` structure.
 
 > **Note**: Pay attention to `maxPipelineRayRecursionDepth`. This controls the maximum number of times a ray can recursively call `TraceRay()`. Initially, a value of 1 is sufficient since only the RayGen shader calls `TraceRay()`. However, when you add features like shadow rays from the closest hit shader, you'll need at least 2. Here, we set it to 3 to cover all immediate needs.
-
 
 #### Step 5.3: Complete Shader Binding Table Creation
 
@@ -1611,10 +1584,7 @@ This implementation demonstrates the core Vulkan functions needed for SBT creati
 
 This direct approach provides complete control over SBT creation and helps understand the underlying Vulkan mechanics.
 
-
 The `nvvk::SBTGenerator` utility simplifies the creation of the shader binding table (SBT) by automatically retrieving shader group handles and organizing them into the correct regions based on the `VkRayTracingPipelineCreateInfoKHR` configuration. It manages the association between shader group indices and their handles, and takes care of alignment and offset calculations when adding data to each group. This abstraction reduces the risk of manual errors and streamlines SBT setup, especially as pipelines become more complex (e.g., with multiple hit groups or callable shaders). In later tutorials, we will use `nvvk::SBTGenerator` to efficiently populate the SBT for advanced scenarios such as multiple closest hit shaders and callable shader groups.
-
-
 
 ### Phase 5 Checkpoint
 
@@ -1632,7 +1602,6 @@ RtFoundation::compileSlangShader -> XX.XXX ms
 Ray tracing pipeline created successfully
 Shader binding table created and populated
 ```
-
 
 ### Shader Details
 
@@ -1713,9 +1682,7 @@ void raytraceScene(VkCommandBuffer cmd)
 }
 ```
 
-This function begins by binding the ray tracing pipeline, followed by binding the descriptor set that provides the scene's textures to the shaders. Next, it uses a push descriptor set to specify the top-level acceleration structure (TLAS) and the output image where the ray tracing results will be written. Unlike rasterization, where this image is attached as a framebuffer, in ray tracing we write directly to it. The push constant is set up similarly to graphics, providing per-frame data to the shaders. The function then calls `vkCmdTraceRaysKHR`, which dispatches the ray tracing pipeline and executes the associated shaders. Finally, a memory barrier ensures that the ray traced image is fully written and ready before it is post-processed by the tonemapper. 
-
-
+This function begins by binding the ray tracing pipeline, followed by binding the descriptor set that provides the scene's textures to the shaders. Next, it uses a push descriptor set to specify the top-level acceleration structure (TLAS) and the output image where the ray tracing results will be written. Unlike rasterization, where this image is attached as a framebuffer, in ray tracing we write directly to it. The push constant is set up similarly to graphics, providing per-frame data to the shaders. The function then calls `vkCmdTraceRaysKHR`, which dispatches the ray tracing pipeline and executes the associated shaders. Finally, a memory barrier ensures that the ray traced image is fully written and ready before it is post-processed by the tonemapper.
 
 #### Step 6.2: Update Scene Buffer for Ray Tracing
 
@@ -1855,7 +1822,6 @@ To verify that live shader reloading is working correctly:
 
 This live shader reloading workflow is extremely useful for rapid iteration, debugging, and experimentation. You can quickly tweak shader code and see the results in real time, without needing to restart the application or rebuild the entire project.
 
-
 ### Ray Tracing Output Details
 
 At this point, you have:
@@ -1887,7 +1853,6 @@ In Phase 7, we'll enhance the closest hit shader with proper material shading to
 
 **Interactive Update**: Since we are only modifying the shader, the application can remain running while you edit the shader code. After saving the shader file, ensure the application window is focused and press F5, or select "Reload Shaders" from the menu, to see your changes take effect.
 
-
 ### Code Changes
 
 #### Step 7.1: Enhanced Closest Hit Shader
@@ -1899,7 +1864,6 @@ For the functions implementing the PBR material evaluation, add the following:
 ```hlsl
 #include "common/shaders/pbr.h.slang"
 ```
-
 
 To access the geometry of the scene, we need the access functions
 
@@ -1988,12 +1952,9 @@ void rchitMain(inout HitPayload payload, in BuiltInTriangleIntersectionAttribute
 
 > **Note**: `InstanceID()` in the shader returns the value we set as `instanceCustomIndex` when building the TLAS instance. In this tutorial, we assigned `ray_inst.instanceCustomIndex = instance.meshIndex;`, making `InstanceID()` directly correspond to the mesh index for each instance. This allows us to quickly retrieve mesh-specific data in the shader. Alternatively, you could store a material index, object ID, or any other custom value in `instanceCustomIndex` to efficiently access per-instance information in your ray tracing shaders.
 
-
 If you run (reload shaders), you should see:
 
-![](/docs/images/phase7_1.png)
-
-
+![phase7_1](/docs/images/phase7_1.png)
 
 #### Step 7.2: Enhanced Miss Shader
 
@@ -2004,7 +1965,6 @@ Update the miss shader to handle sky rendering:
 
 #define MISS_DEPTH 1000
 ```
-
 
 ```hlsl
 // Miss shader
@@ -2031,8 +1991,7 @@ At this point, it is possible to change the background color or use the sun and 
 
 | Solid Color | Sun & Sky |
 |--|--|
-|![](/docs/images/phase7_2_1.png) | ![](/docs/images/phase7_2_2.png)|
-
+|![phase7_2_1](/docs/images/phase7_2_1.png) | ![phase7_2_2](/docs/images/phase7_2_2.png)|
 
 ### Phase 7 Checkpoint
 
@@ -2062,7 +2021,7 @@ At this point, it is possible to change the background color or use the sun and 
 - Integrate sky lighting with sun parameters
 - Enhance the closest hit shader with shadow-aware lighting calculations
 
-**Expected Result**: Ray traced scene with realistic lighting, shadows, and proper light attenuation that matches or exceeds the visual quality of the original rasterized scene. 
+**Expected Result**: Ray traced scene with realistic lighting, shadows, and proper light attenuation that matches or exceeds the visual quality of the original rasterized scene.
 
 ### Code Changes
 
@@ -2134,12 +2093,12 @@ GltfPunctual processLight(GltfSceneInfo sceneInfo, float3 worldPos)
     float theta         = dot(normalize(lightDir), normalize(light.direction));
     float spotIntensity = clamp((theta - cos(light.coneAngle)) / (1.0 - cos(light.coneAngle)), 0.0, 1.0);
     light.intensity *= spotIntensity;
+    light.direction = lightDir;
   }
 
   return light;
 }
 ```
-
 
 #### Step 8.3: Update Closest Hit Shader with Shadow-Aware Lighting
 
@@ -2163,7 +2122,7 @@ color *= light.color * light.intensity * shadowFactor;
 payload.color = color;
 ```
 
-##### Key improvements in this update:
+##### Key improvements in this update
 
 - **Shadow Testing**: Each light contribution is tested for occlusion using shadow rays
 - **Light Processing**: Proper handling of different light types (directional, point, spot)
@@ -2185,8 +2144,7 @@ payload.color = color;
 
 **Expected visual result:**
 
-![](/docs/images/phase8_2.png)
-
+![phase8_2](/docs/images/phase8_2.png)
 
 ### What's Next
 
@@ -2254,7 +2212,6 @@ Through this progressive tutorial, you have:
 
 ### Next Steps
 
-
 Your ray tracing implementation can now be extended with:
 
 1. **Any-hit shaders** for transparency and alpha testing
@@ -2265,7 +2222,6 @@ Your ray tracing implementation can now be extended with:
 6. **Callable shaders** for procedural effects
 
 Check out the [complete set of tutorials](/raytrace_tutorial/).
-
 
 ### Further Reading
 

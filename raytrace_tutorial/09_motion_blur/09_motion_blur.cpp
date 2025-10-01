@@ -143,9 +143,11 @@ public:
 
     // Make instances of the meshes
     m_sceneResource.instances = {
-        {.transform     = glm::scale(glm::translate(glm::mat4(1), glm::vec3(0.0f, -0.5f, 0.0f)), glm::vec3(10.0f)),
-         .materialIndex = 0,
-         .meshIndex     = eMeshPlane},  // Plane
+        {
+            .transform     = glm::scale(glm::translate(glm::mat4(1), glm::vec3(0.0f, -0.5f, 0.0f)), glm::vec3(10.0f)),
+            .materialIndex = 0,
+            .meshIndex     = eMeshPlane,
+        },
         {
             .transform     = glm::translate(glm::mat4(1), glm::vec3(2.0f, 0.0f, 2.0f)),
             .materialIndex = 1,
@@ -557,8 +559,7 @@ int main(int argc, char** argv)
 
   if(!appInfo.headless)
   {
-    nvvk::addSurfaceExtensions(vkSetup.instanceExtensions);
-    vkSetup.deviceExtensions.push_back({VK_KHR_SWAPCHAIN_EXTENSION_NAME});
+    nvvk::addSurfaceExtensions(vkSetup.instanceExtensions, &vkSetup.deviceExtensions);
   }
 
   // Create Vulkan context using the new method

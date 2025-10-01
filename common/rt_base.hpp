@@ -140,7 +140,9 @@ public:
     m_slangCompiler.defaultTarget();
     m_slangCompiler.defaultOptions();
     m_slangCompiler.addOption({slang::CompilerOptionName::DebugInformation,
-                               {slang::CompilerOptionValueKind::Int, SLANG_DEBUG_INFO_LEVEL_MAXIMAL}});
+                               {slang::CompilerOptionValueKind::Int, SLANG_DEBUG_INFO_LEVEL_MINIMAL}});
+    m_slangCompiler.addOption(
+        {slang::CompilerOptionName::Optimization, {slang::CompilerOptionValueKind::Int, SLANG_OPTIMIZATION_LEVEL_NONE}});
 #if defined(AFTERMATH_AVAILABLE)
     // This aftermath callback is used to report the shader hash (Spirv) to the Aftermath library.
     m_slangCompiler.setCompileCallback([&](const std::filesystem::path& sourceFile, const uint32_t* spirvCode, size_t spirvSize) {
@@ -274,7 +276,7 @@ public:
         else
         {
           PE::begin();
-          PE::ColorEdit3("Background", (float*)&sceneInfo.backgroundColor);
+          modified |= PE::ColorEdit3("Background", (float*)&sceneInfo.backgroundColor);
           PE::end();
           // Light
           PE::begin();
@@ -312,8 +314,8 @@ public:
       }
       ImGui::Separator();
       PE::begin();
-      PE::SliderFloat2("Metallic/Roughness Override", glm::value_ptr(m_metallicRoughnessOverride), -0.01f, 1.0f, "%.2f",
-                       ImGuiSliderFlags_AlwaysClamp, "Override all material metallic and roughness");
+      modified |= PE::SliderFloat2("Metallic/Roughness Override", glm::value_ptr(m_metallicRoughnessOverride), -0.01f, 1.0f,
+                                   "%.2f", ImGuiSliderFlags_AlwaysClamp, "Override all material metallic and roughness");
       PE::end();
     }
     ImGui::End();

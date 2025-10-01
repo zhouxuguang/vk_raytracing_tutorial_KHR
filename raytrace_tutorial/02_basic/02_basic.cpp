@@ -809,7 +809,8 @@ public:
     nvvk::Buffer scratchBuffer;
     NVVK_CHECK(m_allocator.createBuffer(scratchBuffer, scratchSize,
                                         VK_BUFFER_USAGE_2_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_2_SHADER_DEVICE_ADDRESS_BIT
-                                            | VK_BUFFER_USAGE_2_ACCELERATION_STRUCTURE_STORAGE_BIT_KHR));
+                                            | VK_BUFFER_USAGE_2_ACCELERATION_STRUCTURE_STORAGE_BIT_KHR,
+                                        VMA_MEMORY_USAGE_AUTO, {}, m_asProperties.minAccelerationStructureScratchOffsetAlignment));
 
     // Create the acceleration structure
     VkAccelerationStructureCreateInfoKHR createInfo{
@@ -1242,8 +1243,7 @@ int main(int argc, char** argv)
   };
   if(!appInfo.headless)
   {
-    nvvk::addSurfaceExtensions(vkSetup.instanceExtensions /*, &vkSetup.deviceExtensions*/);
-    vkSetup.deviceExtensions.push_back({VK_KHR_SWAPCHAIN_EXTENSION_NAME});
+    nvvk::addSurfaceExtensions(vkSetup.instanceExtensions, &vkSetup.deviceExtensions);
   }
 
   // Adding control on the validation layers

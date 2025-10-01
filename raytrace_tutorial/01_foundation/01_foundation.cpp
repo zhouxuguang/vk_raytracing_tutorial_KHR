@@ -743,8 +743,7 @@ int main(int argc, char** argv)
   };
   if(!appInfo.headless)
   {
-    nvvk::addSurfaceExtensions(vkSetup.instanceExtensions);
-    vkSetup.deviceExtensions.push_back({VK_KHR_SWAPCHAIN_EXTENSION_NAME});
+    nvvk::addSurfaceExtensions(vkSetup.instanceExtensions, &vkSetup.deviceExtensions);
   }
 
   // Adding control on the validation layers

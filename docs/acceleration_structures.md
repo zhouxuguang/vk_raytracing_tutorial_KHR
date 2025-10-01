@@ -576,7 +576,7 @@ void buildBLASWithBudgeting()
     // Create scratch buffer
     const VkDeviceSize alignment = m_accelStructProps.minAccelerationStructureScratchOffsetAlignment;
     m_allocator->createBuffer(blasScratchBuffer, scratchSize, 
-         VK_BUFFER_USAGE_2_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_2_SHADER_DEVICE_ADDRESS_BIT | VK_BUFFER_USAGE_2_ACCELERATION_STRUCTURE_STORAGE_BIT_KHR);
+         VK_BUFFER_USAGE_2_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_2_SHADER_DEVICE_ADDRESS_BIT | VK_BUFFER_USAGE_2_ACCELERATION_STRUCTURE_STORAGE_BIT_KHR, VMA_MEMORY_USAGE_AUTO, {}, alignment);
     
     // Start the build and compaction of the BLAS
     VkDeviceSize hintMaxBudget   = 2'000'000;  // Limiting the size of the scratch buffer to 2MB

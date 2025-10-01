@@ -32,6 +32,7 @@ add_subdirectory(raytrace_tutorial/12_infinite_plane)
 add_subdirectory(raytrace_tutorial/13_callable_shader)
 add_subdirectory(raytrace_tutorial/14_animation)
 add_subdirectory(raytrace_tutorial/15_micro_maps_opacity)
+add_subdirectory(raytrace_tutorial/16_ray_query)
 add_subdirectory(raytrace_tutorial/XX_template)
 
 # Make Visual Studio use this project as the startup project

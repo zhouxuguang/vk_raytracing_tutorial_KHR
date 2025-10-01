@@ -172,6 +172,7 @@ GltfPunctual processLight(GltfSceneInfo sceneInfo, float3 worldPos)
     // Smooth falloff from inner cone (1.0) to outer cone (0.0)
     float spotIntensity = clamp((theta - cos(light.coneAngle)) / (1.0 - cos(light.coneAngle)), 0.0, 1.0);
     light.intensity *= spotIntensity;
+    light.direction = lightDir;
   }
 
   return light;
