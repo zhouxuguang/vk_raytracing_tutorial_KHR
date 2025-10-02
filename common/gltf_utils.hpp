@@ -48,6 +48,9 @@ struct GltfSceneResource
   nvvk::Buffer              bInstances;  // Buffer containing all GltfInstance data
   nvvk::Buffer              bMaterials;  // Buffer containing all GltfMetallicRoughness data
   nvvk::Buffer              bSceneInfo;  // Buffer containing GltfSceneInfo
+
+  // Mapping from mesh index to buffer index in bGltfDatas
+  std::vector<uint32_t> meshToBufferIndex;  // meshToBufferIndex[meshIndex] = bufferIndex
 };
 
 // This is a utility function to load a GLTF file and return the model data.

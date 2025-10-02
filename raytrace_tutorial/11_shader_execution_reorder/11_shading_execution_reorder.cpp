@@ -18,9 +18,9 @@
  */
 
 //
-// Ray Tracing Tutorial - 11 Shading Execution Reorder
+// Ray Tracing Tutorial - 11 Shader Execution Reorder
 //
-// This sample demonstrates the use of Shading Execution Reorder (SER) to improve
+// This sample demonstrates the use of Shader Execution Reorder (SER) to improve
 // ray tracing performance by reducing divergence in shader execution. SER allows
 // fine-grained control over the scheduling of ray tracing operations by intelligently
 // reordering shader invocations based on their execution characteristics.
@@ -46,7 +46,7 @@
 // Pre-compiled shaders
 #include "_autogen/sky_simple.slang.h"
 #include "_autogen/tonemapper.slang.h"
-#include "_autogen/shading_execution_reorder.slang.h"
+#include "_autogen/shader_execution_reorder.slang.h"
 
 // Common base class (see 02_basic)
 #include "common/rt_base.hpp"
@@ -245,7 +245,7 @@ public:
     destroyRayTracingPipeline();
 
     // Compile shader, and if failed, use pre-compiled shaders
-    VkShaderModuleCreateInfo shaderCode = compileSlangShader("shading_execution_reorder.slang", shading_execution_reorder_slang);
+    VkShaderModuleCreateInfo shaderCode = compileSlangShader("shader_execution_reorder.slang", shader_execution_reorder_slang);
 
     // Creating all shaders
     enum StageIndices
@@ -465,7 +465,7 @@ int main(int argc, char** argv)
   }
 
   // Setting up the application
-  appInfo.name           = "Ray Tracing Tutorial - 11 Shading Execution Reorder";
+  appInfo.name           = "Ray Tracing Tutorial - 11 Shader Execution Reorder";
   appInfo.instance       = vkContext->getInstance();
   appInfo.device         = vkContext->getDevice();
   appInfo.physicalDevice = vkContext->getPhysicalDevice();

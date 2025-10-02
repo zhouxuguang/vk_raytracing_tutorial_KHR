@@ -1,14 +1,14 @@
-# Ray Tracing Tutorial - 11 Shading Execution Reorder
+# Ray Tracing Tutorial - 11 Shader Execution Reorder
 
 ![](/docs/images/11.png)
 
-This tutorial demonstrates **Shading Execution Reorder (SER)**, an advanced GPU optimization technique that improves ray tracing performance by reducing execution divergence. SER intelligently reorders shader invocations based on their execution characteristics, leading to significant performance gains in complex scenes with varied materials and lighting.
+This tutorial demonstrates **Shader Execution Reorder (SER)**, an advanced GPU optimization technique that improves ray tracing performance by reducing execution divergence. SER intelligently reorders shader invocations based on their execution characteristics, leading to significant performance gains in complex scenes with varied materials and lighting.
 
 ## Key Changes from 02_basic.cpp
 
 ### 1. Shader Changes
 
-**Modified: `shaders/shading_execution_reorder.slang`**
+**Modified: `shaders/shader_execution_reorder.slang`**
 
 - **SER Integration**: Replaces traditional `TraceRay()` calls with `HitObject::TraceRay()` and `ReorderThread()` for optimized execution
 - **Specialization Constants**: Uses `USE_SER` constant to avoid maintaining separate shader variants, but still requires pipeline recreation when toggling SER on/off
@@ -34,7 +34,7 @@ if(USE_SER == 1) {
 
 ### 2. C++ Application Changes
 
-**Modified: `11_shading_execution_reorder.cpp`**
+**Modified: `11_shader_execution_reorder.cpp`**
 
 - **SER Extension Support**: Adds `VK_NV_RAY_TRACING_INVOCATION_REORDER_EXTENSION_NAME` for SER functionality
 - **Complex Scene Generation**: Creates a hollow box of spheres (20x20x20 grid) with 128 unique materials to demonstrate divergence
@@ -214,7 +214,7 @@ The tutorial includes sophisticated frame management:
 
 ## Summary
 
-Shading Execution Reorder represents a significant advancement in GPU ray tracing optimization. By reducing execution divergence through intelligent thread reordering, SER can provide substantial performance improvements in complex ray tracing scenarios.
+Shader Execution Reorder represents a significant advancement in GPU ray tracing optimization. By reducing execution divergence through intelligent thread reordering, SER can provide substantial performance improvements in complex ray tracing scenarios.
 
 **Key Takeaways**:
 

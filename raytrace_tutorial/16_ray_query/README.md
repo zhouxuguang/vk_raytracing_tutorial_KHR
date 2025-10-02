@@ -236,7 +236,7 @@ While ray queries offer significant advantages, traditional ray tracing pipeline
 
 ### Ray Queries Excel At:
 
-- **Integration with existing shaders** (compute, fragment) for incremental RT adoption
+- **Flexible integration into compute, fragment, and mesh shaders** for gradual and targeted use of ray tracing features
 - **Unified shader architectures** where one meta-shader handles all material cases (e.g., complete glTF PBR with extensions)
 - **Complex algorithms requiring full control flow** - loops, conditionals, and custom logic patterns
 - **Custom intersection logic** and fine-grained control over ray processing
@@ -254,7 +254,6 @@ While ray queries offer significant advantages, traditional ray tracing pipeline
 - **Memory-efficient payload handling** with specialized payloads per ray type
 - **Large teams/codebases** where shader modularity and separation of concerns is important
 
-**Important Note**: Both approaches use the same underlying hardware acceleration (RT cores on supported GPUs). The performance difference typically comes from overhead and optimization patterns rather than fundamental hardware access differences.
 
 ## Technical Details
 
@@ -320,4 +319,4 @@ if(q.CommittedStatus() == COMMITTED_TRIANGLE_HIT) {
 
 1. Hanika, Johannes. "Hacking the shadow terminator." *Computer Graphics Forum*, 2021. [https://jo.dreggn.org/home/2021_terminator.pdf](https://jo.dreggn.org/home/2021_terminator.pdf)
 
-2. NVIDIA Developer Documentation. "Vulkan Ray Query Extension." *NVIDIA Developer Documentation*. [https://docs.nvidia.com/rtx/raytracing/vkray.html](https://docs.nvidia.com/rtx/raytracing/vkray.html)
+2. Vulkan Ray Query Extension. "VK_KHR_ray_query." *Khronos Vulkan Specification*. [https://registry.khronos.org/vulkan/specs/latest/man/html/VK_KHR_ray_query.html](https://registry.khronos.org/vulkan/specs/latest/man/html/VK_KHR_ray_query.html)

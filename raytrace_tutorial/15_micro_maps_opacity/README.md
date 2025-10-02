@@ -198,9 +198,7 @@ The tutorial provides real-time controls for experimentation:
 ## Related Resources
 
 - [Vulkan Opacity Micro-Map Extension](https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VK_EXT_opacity_micromap.html)
-- [Opacity-MicroMap-SDK](https://github.com/NVIDIAGameWorks/Opacity-MicroMap-SDK)
-- [Ray Tracing Tutorial Series](../README.md)
-- [Basic Ray Tracing Tutorial](../02_basic/README.md)
+- [Opacity-MicroMap-SDK](https://github.com/NVIDIA-RTX/OMM)
 
 ## Dependencies
 

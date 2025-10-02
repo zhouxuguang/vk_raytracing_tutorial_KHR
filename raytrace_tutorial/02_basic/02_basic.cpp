@@ -712,9 +712,12 @@ public:
       pushValues.instanceIndex = int(i);  // The index of the instance in the m_instances vector
       vkCmdPushConstants2(cmd, &pushInfo);
 
+      // Get the buffer directly using the pre-computed mapping
+      uint32_t            bufferIndex = m_sceneResource.meshToBufferIndex[meshIndex];
+      const nvvk::Buffer& v           = m_sceneResource.bGltfDatas[bufferIndex];
+
       // Bind index buffers
-      vkCmdBindIndexBuffer(cmd, m_sceneResource.bGltfDatas[meshIndex].buffer, triMesh.indices.offset,
-                           VkIndexType(gltfMesh.indexType));
+      vkCmdBindIndexBuffer(cmd, v.buffer, triMesh.indices.offset, VkIndexType(gltfMesh.indexType));
 
       // Draw the mesh
       vkCmdDrawIndexed(cmd, triMesh.indices.count, 1, 0, 0, 0);  // All indices

@@ -50,6 +50,7 @@ void nvsamples::primitiveMeshToResource(GltfSceneResource&            sceneResou
   allocator->createBuffer(gltfData, verticesSize + trianglesSize,
                           VK_BUFFER_USAGE_2_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_2_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_2_STORAGE_BUFFER_BIT
                               | VK_BUFFER_USAGE_2_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR);
+  uint32_t bufferIndex = static_cast<uint32_t>(sceneResource.bGltfDatas.size());
   sceneResource.bGltfDatas.push_back(gltfData);
 
   // Upload vertices first (at offset 0)
@@ -81,6 +82,9 @@ void nvsamples::primitiveMeshToResource(GltfSceneResource&            sceneResou
   mesh.gltfBuffer = (uint8_t*)gltfData.address;
   mesh.indexType  = VK_INDEX_TYPE_UINT32;  // Assuming uint32_t indices
   sceneResource.meshes.push_back(mesh);
+
+  // Update the mapping from mesh index to buffer index
+  sceneResource.meshToBufferIndex.push_back(bufferIndex);
 }
 
 tinygltf::Model nvsamples::loadGltfResources(const std::filesystem::path& filename)
@@ -170,6 +174,7 @@ void nvsamples::importGltfData(GltfSceneResource&     sceneResource,
 
   // Upload the scene resource to the GPU
   nvvk::Buffer bGltfData;
+  uint32_t     bufferIndex{};
   {
     nvvk::ResourceAllocator* allocator = stagingUploader.getResourceAllocator();
 
@@ -182,6 +187,7 @@ void nvsamples::importGltfData(GltfSceneResource&     sceneResource,
     NVVK_CHECK(stagingUploader.appendBuffer(bGltfData, 0, std::span<const unsigned char>(model.buffers[0].data)));
     NVVK_DBG_NAME(bGltfData.buffer);
 
+    bufferIndex = static_cast<uint32_t>(sceneResource.bGltfDatas.size());
     sceneResource.bGltfDatas.push_back(bGltfData);
   }
 
@@ -216,6 +222,9 @@ void nvsamples::importGltfData(GltfSceneResource&     sceneResource,
     extractAttribute("TANGENT", mesh.triMesh.tangents, primitive);
 
     sceneResource.meshes.emplace_back(mesh);
+
+    // Update the mapping from mesh index to buffer index
+    sceneResource.meshToBufferIndex.push_back(bufferIndex);
   }
 
   if(importInstance)

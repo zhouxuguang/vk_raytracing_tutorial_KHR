@@ -91,6 +91,12 @@ public:
   // Override to customize ray tracing pipeline creation
   virtual void createRayTracingPipeline() = 0;
 
+  // Override to customize rasterization rendering (optional)
+  // virtual void rasterScene(VkCommandBuffer cmd);
+
+  // Override to create rasterization shaders (optional)
+  // virtual void createRasterizationShaders();
+
 
   RtBase()
   {
@@ -190,6 +196,9 @@ public:
     // Set up ray tracing pipeline infrastructure
     createRaytraceDescriptorLayout();  // Create descriptor layout
     createRayTracingPipeline();        // Create pipeline structure and SBT
+
+    // Set up rasterization infrastructure (optional)
+    createRasterizationShaders();  // Create rasterization shaders
   }
 
   //-------------------------------------------------------------------------------
@@ -338,7 +347,17 @@ public:
 
     // Update the scene information buffer, this cannot be done in between dynamic rendering
     updateSceneBuffer(cmd);
-    raytraceScene(cmd);
+
+    // Render scene (either rasterization or ray tracing)
+    if(m_useRayTracing)
+    {
+      raytraceScene(cmd);  // Use ray tracing
+    }
+    else
+    {
+      rasterScene(cmd);  // Use rasterization
+    }
+
     postProcess(cmd);
   }
 
@@ -440,7 +459,7 @@ public:
   // The graphic pipeline is all the stages that are used to render a section of the scene.
   // Stages like: vertex shader, fragment shader, rasterization, and blending.
   //
-  void createGraphicsPipelineLayout()
+  virtual void createGraphicsPipelineLayout()
   {
     // Push constant is used to pass data to the shader at each frame
     const VkPushConstantRange pushConstantRange{
@@ -456,6 +475,8 @@ public:
     };
     NVVK_CHECK(vkCreatePipelineLayout(m_app->getDevice(), &pipelineLayoutInfo, nullptr, &m_graphicPipelineLayout));
     NVVK_DBG_NAME(m_graphicPipelineLayout);
+
+    m_dynamicPipeline.rasterizationState.cullMode = VK_CULL_MODE_NONE;  // Don't cull any triangles (double-sided rendering)
   }
 
 
@@ -737,6 +758,124 @@ public:
     nvvk::cmdMemoryBarrier(cmd, VK_PIPELINE_STAGE_2_RAY_TRACING_SHADER_BIT_KHR, VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT);
   }
 
+  //---------------------------------------------------------------------------------------------------------------
+  // Rasterization rendering method (base implementation)
+  // This provides basic rasterization support for tutorials that need G-buffer generation
+  virtual void rasterScene(VkCommandBuffer cmd)
+  {
+    NVVK_DBG_SCOPE(cmd);  // <-- Helps to debug in NSight
+
+    // Rendering the Sky
+    if(m_sceneResource.sceneInfo.useSky)
+    {
+      const glm::mat4& viewMatrix = m_cameraManip->getViewMatrix();
+      const glm::mat4& projMatrix = m_cameraManip->getPerspectiveMatrix();
+      m_skySimple.runCompute(cmd, m_app->getViewportSize(), viewMatrix, projMatrix,
+                             m_sceneResource.sceneInfo.skySimpleParam, m_gBuffers.getDescriptorImageInfo(eImgRendered));
+    }
+
+    // Rendering to the GBuffer
+    VkRenderingAttachmentInfo colorAttachment = DEFAULT_VkRenderingAttachmentInfo;
+    colorAttachment.loadOp = m_sceneResource.sceneInfo.useSky ? VK_ATTACHMENT_LOAD_OP_LOAD : VK_ATTACHMENT_LOAD_OP_CLEAR;
+    colorAttachment.imageView  = m_gBuffers.getColorImageView(eImgRendered);
+    colorAttachment.clearValue = {.color = {m_sceneResource.sceneInfo.backgroundColor.x,
+                                            m_sceneResource.sceneInfo.backgroundColor.y,
+                                            m_sceneResource.sceneInfo.backgroundColor.z, 1.0f}};
+
+    VkRenderingAttachmentInfo depthAttachment = DEFAULT_VkRenderingAttachmentInfo;
+    depthAttachment.imageView                 = m_gBuffers.getDepthImageView();
+    depthAttachment.clearValue                = {.depthStencil = DEFAULT_VkClearDepthStencilValue};
+
+    // Create the rendering info
+    VkRenderingInfo renderingInfo      = DEFAULT_VkRenderingInfo;
+    renderingInfo.renderArea           = DEFAULT_VkRect2D(m_gBuffers.getSize());
+    renderingInfo.colorAttachmentCount = 1;
+    renderingInfo.pColorAttachments    = &colorAttachment;
+    renderingInfo.pDepthAttachment     = &depthAttachment;
+
+    // Change the GBuffer layout to prepare for rendering (attachment)
+    nvvk::cmdImageMemoryBarrier(cmd, {m_gBuffers.getColorImage(eImgRendered), VK_IMAGE_LAYOUT_GENERAL,
+                                      VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL});
+
+    // Bind the descriptor sets for the graphics pipeline (making textures available to the shaders)
+    const VkBindDescriptorSetsInfo bindDescriptorSetsInfo{.sType      = VK_STRUCTURE_TYPE_BIND_DESCRIPTOR_SETS_INFO,
+                                                          .stageFlags = VK_SHADER_STAGE_ALL_GRAPHICS,
+                                                          .layout     = m_graphicPipelineLayout,
+                                                          .firstSet   = 0,
+                                                          .descriptorSetCount = 1,
+                                                          .pDescriptorSets    = m_descPack.getSetPtr()};
+    vkCmdBindDescriptorSets2(cmd, &bindDescriptorSetsInfo);
+
+    // ** BEGIN RENDERING **
+    vkCmdBeginRendering(cmd, &renderingInfo);
+
+    // All dynamic states are set here
+    m_dynamicPipeline.cmdApplyAllStates(cmd);
+    m_dynamicPipeline.cmdSetViewportAndScissor(cmd, m_app->getViewportSize());
+    vkCmdSetDepthTestEnable(cmd, VK_TRUE);
+
+    // Bind shaders if they exist (for rasterization tutorials)
+    if(m_vertexShader && m_fragmentShader)
+    {
+      m_dynamicPipeline.cmdBindShaders(cmd, {.vertex = m_vertexShader, .fragment = m_fragmentShader});
+    }
+
+    // We don't send vertex attributes, they are pulled in the shader
+    VkVertexInputBindingDescription2EXT   bindingDescription   = {};
+    VkVertexInputAttributeDescription2EXT attributeDescription = {};
+    vkCmdSetVertexInputEXT(cmd, 0, nullptr, 0, nullptr);
+
+    // Push constant information
+    shaderio::TutoPushConstant pushValues{
+        .sceneInfoAddress          = (shaderio::GltfSceneInfo*)m_sceneResource.bSceneInfo.address,
+        .metallicRoughnessOverride = m_metallicRoughnessOverride,
+    };
+    const VkPushConstantsInfo pushInfo{
+        .sType      = VK_STRUCTURE_TYPE_PUSH_CONSTANTS_INFO,
+        .layout     = m_graphicPipelineLayout,
+        .stageFlags = VK_SHADER_STAGE_ALL_GRAPHICS,
+        .offset     = 0,
+        .size       = sizeof(shaderio::TutoPushConstant),
+        .pValues    = &pushValues,
+    };
+
+    for(size_t i = 0; i < m_sceneResource.instances.size(); i++)
+    {
+      uint32_t                      meshIndex = m_sceneResource.instances[i].meshIndex;
+      const shaderio::GltfMesh&     gltfMesh  = m_sceneResource.meshes[meshIndex];
+      const shaderio::TriangleMesh& triMesh   = gltfMesh.triMesh;
+
+      // Push constant is information that is passed to the shader at each draw call.
+      pushValues.normalMatrix  = glm::transpose(glm::inverse(glm::mat3(m_sceneResource.instances[i].transform)));
+      pushValues.instanceIndex = int(i);  // The index of the instance in the m_instances vector
+      vkCmdPushConstants2(cmd, &pushInfo);
+
+      // Get the buffer directly using the pre-computed mapping
+      uint32_t            bufferIndex = m_sceneResource.meshToBufferIndex[meshIndex];
+      const nvvk::Buffer& v           = m_sceneResource.bGltfDatas[bufferIndex];
+
+      // Bind index buffers
+      vkCmdBindIndexBuffer(cmd, v.buffer, triMesh.indices.offset, VkIndexType(gltfMesh.indexType));
+
+      // Draw the mesh
+      vkCmdDrawIndexed(cmd, triMesh.indices.count, 1, 0, 0, 0);  // All indices
+    }
+
+    // ** END RENDERING **
+    vkCmdEndRendering(cmd);
+    nvvk::cmdImageMemoryBarrier(cmd, {m_gBuffers.getColorImage(eImgRendered), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+                                      VK_IMAGE_LAYOUT_GENERAL});
+  }
+
+  //---------------------------------------------------------------------------------------------------------------
+  // Create rasterization shaders (base implementation)
+  // This provides basic shader creation support for tutorials that need rasterization
+  virtual void createRasterizationShaders()
+  {
+    // Base implementation does nothing - derived classes should override
+    // and create their specific vertex/fragment shaders
+  }
+
 
 protected:
   // Application and core components
@@ -755,6 +894,13 @@ protected:
   nvvk::DescriptorPack m_descPack;  // The descriptor bindings used to create the descriptor set layout and descriptor sets
   VkPipelineLayout m_graphicPipelineLayout{};  // The pipeline layout use with graphics pipeline
   nvvk::DescriptorBindings m_bindings;  // The descriptor bindings used to create the descriptor set layout and descriptor sets
+
+  // Shaders (for rasterization)
+  VkShaderEXT m_vertexShader{};    // The vertex shader used to render the scene
+  VkShaderEXT m_fragmentShader{};  // The fragment shader used to render the scene
+
+  // Rendering mode toggle
+  bool m_useRayTracing = true;  // Set to true to use ray tracing, false for rasterization
 
   // Scene information buffer (UBO)
   nvsamples::GltfSceneResource m_sceneResource{};  // The GLTF scene resource, contains all the buffers and data for the scene

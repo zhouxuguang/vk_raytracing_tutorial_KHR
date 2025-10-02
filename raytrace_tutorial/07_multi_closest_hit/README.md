@@ -102,6 +102,6 @@ Color values are automatically converted between sRGB and linear color spaces fo
 
 ## References
 
-- [Vulkan Ray Tracing Specification](https://www.khronos.org/registry/vulkan/specs/1.1-extensions/html/chap33.html)
-- [Shader Binding Table](https://www.khronos.org/registry/vulkan/specs/1.1-extensions/html/chap33.html#shader-binding-table)
-- [Shader Record Data](https://www.khronos.org/registry/vulkan/specs/1.1-extensions/html/chap33.html#shader-record-data) 
+- [Vulkan Ray Tracing Specification](https://docs.vulkan.org/spec/latest/chapters/raytracing.html)
+- [Acceleration Structures](https://docs.vulkan.org/spec/latest/chapters/accelstructures.html)
+- [Shader Binding Table](https://docs.vulkan.org/spec/latest/chapters/raytracing.html#shader-binding-table)

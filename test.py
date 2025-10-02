@@ -17,7 +17,7 @@ EXECUTABLES = [
     ("08_intersection", ["--headless"]),
     ("09_motion_blur", ["--headless"]),
     ("10_position_fetch", ["--headless"]),
-    ("11_shading_execution_reorder", ["--headless"]),
+    ("11_shader_execution_reorder", ["--headless"]),
     ("12_infinite_plane", ["--headless", "--maxFrames", "100"]),
     ("13_callable_shader", ["--headless"]),
     ("14_animation", ["--headless"]),
