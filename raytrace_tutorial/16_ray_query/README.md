@@ -1,7 +1,7 @@
 # 16 Ray Query - Tutorial
 ![](/docs/images/16.png)
 
-This tutorial demonstrates how to implement **Monte Carlo path tracing** using Vulkan's ray query extension within compute shaders, offering an alternative to traditional ray tracing pipelines. Ray queries provide inline ray tracing capabilities that give developers greater flexibility and control over the ray tracing process while potentially improving performance for certain use cases.
+This tutorial demonstrates how to implement **Monte Carlo path tracing** using Vulkan's ray query extension within compute shaders, offering an alternative to traditional ray tracing pipelines. Ray queries provide inline ray tracing capabilities that enable procedural control over ray processing within a single shader, which can be beneficial for certain algorithmic approaches and unified shader architectures.
 
 **This tutorial implements a sophisticated Monte Carlo path tracer** with physically-based materials, multiple light types, and advanced techniques for handling low tessellated geometry and shadow artifacts.
 
@@ -78,7 +78,7 @@ Ray queries provide inline ray tracing within compute shaders, allowing develope
 3. **Process Intersections**: Manually iterate through potential hits
 4. **Extract Data**: Directly access intersection information and geometry data
 
-The key advantage is **procedural control** - instead of relying on separate ray generation, closest hit, and miss shaders, all logic is contained within a single compute shader with full control flow.
+The key advantage is **procedural control** - instead of relying on separate ray generation, closest hit, and miss shaders, all logic is contained within a single compute shader. This enables explicit control within a single shader, which can simplify certain algorithmic implementations that benefit from unified control flow.
 
 ## Monte Carlo Path Tracing Implementation
 
@@ -139,7 +139,7 @@ for(int depth = 0; depth < maxDepth; depth++) {
 
 ### Performance Optimizations
 
-- **Inline ray queries** avoid shader binding table overhead
+- **Inline ray queries** may reduce shader binding table overhead (performance impact varies by use case)
 - **Early path termination** using Russian roulette
 - **Optimized BSDF sampling** and evaluation
 - **Efficient random number generation** using xxhash
@@ -206,53 +206,55 @@ if(dot(r, hit.geonrm) < 0)
 
 ### Benefits of This Approach
 
-- **Eliminates shadow terminator artifacts** on low-poly models
-- **Prevents internal reflections** on back-facing surfaces
-- **Maintains consistent lighting** across triangle boundaries
-- **Improves visual quality** without requiring higher tessellation
-- **Works with existing assets** without geometry modifications
+- **Addresses shadow terminator artifacts** on low-poly models
+- **Reduces internal reflections** on back-facing surfaces
+- **Helps maintain consistent lighting** across triangle boundaries
+- **Can improve visual quality** without requiring higher tessellation
+- **Compatible with existing assets** without geometry modifications
 
 
-## Ray Query Benefits
+## Ray Query Characteristics
 
-### Performance Advantages
+### Performance Considerations
 
-- **Reduced Overhead**: Eliminates shader binding table lookups and stage transitions
-- **Better Cache Locality**: All ray processing logic in one shader could reduces memory traffic
+- **Potential Reduced Overhead**: May eliminate some shader binding table lookups and stage transitions (requires benchmarking for your specific use case)
+- **Cache Locality Trade-offs**: Consolidating logic in one shader may improve cache locality for simple cases, but could increase instruction cache pressure for complex shaders
 - **Simplified Pipeline**: Fewer pipeline state changes and shader stages
 
-### Development Flexibility
+### Development Characteristics
 
-- **Unified Control**: All ray tracing logic in one place for easier debugging
-- **Custom Algorithms**: Easier to implement complex ray tracing algorithms
-- **Dynamic Behavior**: More flexible control flow compared to fixed pipeline stages
-- **Path Tracing Implementation**: Full Monte Carlo path tracing with advanced features
-- **Geometry Quality**: Advanced techniques for handling low tessellated geometry
-- **Visual Artifact Prevention**: Shadow terminator fixes and normal alignment
+- **Unified Control**: All ray tracing logic in one place, which can simplify debugging for certain use cases
+- **Control Flow**: Explicit procedural control within a single shader vs. pipeline stage transitions
 
 ## Trade-offs: Ray Queries vs Traditional RT Pipelines
 
-While ray queries offer significant advantages, traditional ray tracing pipelines also have their strengths:
+Both ray queries and traditional RT pipelines are capable approaches with different implementation characteristics:
 
-### Ray Queries Excel At:
+### Ray Queries May Be Preferred For:
 
-- **Flexible integration into compute, fragment, and mesh shaders** for gradual and targeted use of ray tracing features
-- **Unified shader architectures** where one meta-shader handles all material cases (e.g., complete glTF PBR with extensions)
-- **Complex algorithms requiring full control flow** - loops, conditionals, and custom logic patterns
-- **Custom intersection logic** and fine-grained control over ray processing
-- **Educational/research implementations** requiring step-by-step ray control
-- **Monolithic renderers** where all ray tracing logic is centralized in a single shader
-- **Dynamic material systems** where material types are determined at runtime rather than compile time
+- **Integration into existing compute/fragment/mesh shaders** for gradual adoption of ray tracing features
+- **Unified shader architectures** where a single compute shader handles all material cases with explicit branching logic
+- **Algorithms requiring explicit procedural control** within a single shader context
+- **Educational/research implementations** where step-by-step ray control aids understanding
+- **Prototyping and experimentation** where rapid iteration on ray processing logic is needed
+- **Simple to moderate complexity scenes** where the unified approach doesn't create excessive shader complexity
 
-### Traditional RT Pipelines Excel At:
+### Traditional RT Pipelines May Be Preferred For:
 
-- **Modular material systems** where different materials use specialized, optimized shaders
+- **Modular material systems** where different materials benefit from specialized, optimized shaders
 - **Shader specialization** with compile-time optimizations for specific material types
-- **Advanced ray tracing features** like shader execution reordering (SER)
+- **Advanced ray tracing features** like shader execution reordering (SER) and other hardware-specific optimizations
 - **Industry-standard workflows** and established toolchain integration
-- **Automatic optimizations** by drivers for common RT patterns
+- **Complex scenes with many material types** where shader modularity prevents excessive branching
 - **Memory-efficient payload handling** with specialized payloads per ray type
 - **Large teams/codebases** where shader modularity and separation of concerns is important
+- **Production renderers** where driver optimizations and established patterns provide proven performance
+
+### Important Notes:
+
+- **Performance**: Actual performance differences depend heavily on specific use cases, hardware, and implementation details
+- **Dynamic Materials**: Ray queries use runtime branching in a single shader, while RT pipelines can use ubershaders or dynamic shader selection
+- **Complexity**: The "best" choice often depends on your specific requirements, team expertise, and existing codebase
 
 
 ## Technical Details
@@ -313,7 +315,7 @@ if(q.CommittedStatus() == COMMITTED_TRIANGLE_HIT) {
 - **Denoising**: Add temporal/spatial denoising to reduce sample count requirements
 - **Volumetrics**: Extend to handle participating media and atmospheric effects  
 - **Advanced Materials**: Implement subsurface scattering or anisotropic BRDFs
-- **Performance**: Compare ray queries vs traditional RT pipelines in your specific use case
+- **Performance**: Benchmark ray queries vs traditional RT pipelines for your specific use case to determine the optimal approach
 
 ## References
 

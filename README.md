@@ -99,6 +99,8 @@ This comprehensive collection of focused tutorials builds upon the foundation es
 | xx_partition_tlas  | comming soon  |
 | xx_clusters  | comming soon  |
 | xx_particles_large_accel | comming soon |
+| xx_volumetric_rendering | comming soon |
+
 ---
 
 
