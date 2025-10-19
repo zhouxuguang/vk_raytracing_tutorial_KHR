@@ -1,4 +1,8 @@
 # Vulkan Ray Tracing Tutorial (v2)
+
+> **Repository**: [github.com/nvpro-samples/vk_raytracing_tutorial_KHR](https://github.com/nvpro-samples/vk_raytracing_tutorial_KHR)  
+> **Author**: Martin-Karl Lefrançois, NVIDIA
+
 ## Progressive Conversion from Rasterization to Ray Tracing
 
 | Before | After |
