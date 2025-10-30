@@ -145,15 +145,19 @@ uint64_t ReadClock()
 // Shoot a ray an return the information of the closest hit, in the
 // PtPayload structure (PRD)
 //
-void traceRay(RayDesc ray, inout HitPayload payload)
+void traceRay(RayDesc ray, inout HitPayload payload, int depth)
 {
   payload.hitT  = 0.0F;
   ray.TMax      = INFINITE;
-  uint rayFlags = RAY_FLAG_CULL_BACK_FACING_TRIANGLES;
+  uint rayFlags = 0;
   if(USE_SER == 1)
   {
     HitObject hitObj = HitObject::TraceRay(topLevelAS, rayFlags, 0xFF, 0, 0, 0, ray, payload);
-    ReorderThread(hitObj);
+
+    uint materialID = hitObj.GetInstanceID();  // Get the material ID from the instance ID (custom index)
+    // Using 7 bits for the material ID and 3 bits for the depth:
+    uint coherenceHint = (materialID << 3) | (uint(depth) & 7);
+    ReorderThread(hitObj, coherenceHint, 10);
 
     float3 barycentrics = hitObj.GetAttributes<float3>();
 
@@ -196,8 +200,8 @@ void traceRay(RayDesc ray, inout HitPayload payload)
 //
 bool traceShadow(RayDesc ray, inout HitPayload payload)
 {
-  payload.hitT = 0.0F;
-  uint rayFlags = RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH | RAY_FLAG_CULL_BACK_FACING_TRIANGLES | RAY_FLAG_SKIP_CLOSEST_HIT_SHADER;
+  payload.hitT  = 0.0F;
+  uint rayFlags = RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH | RAY_FLAG_SKIP_CLOSEST_HIT_SHADER;
   bool isHit;
   if(USE_SER == 1)
   {
@@ -221,7 +225,7 @@ float3 pathTrace(RayDesc ray, inout uint seed, inout HitPayload payload)
 
   for(int depth = 0; depth < pushConst.maxDepth; depth++)
   {
-    traceRay(ray, payload);
+    traceRay(ray, payload, depth);
 
     // Hitting the environment, then exit
     if(payload.hitT == INFINITE)
@@ -428,10 +432,10 @@ void rgenMain()
 [shader("closesthit")]
 void rchitMain(inout HitPayload payload, in BuiltInTriangleIntersectionAttributes attr)
 {
-  uint                  instanceID = InstanceIndex();
-  GltfSceneInfo         sceneInfo  = pushConst.sceneInfoAddress[0];
-  GltfInstance          instance   = sceneInfo.instances[instanceID];
-  GltfMesh              mesh       = sceneInfo.meshes[instance.meshIndex];
+  uint          instanceID = InstanceIndex();
+  GltfSceneInfo sceneInfo  = pushConst.sceneInfoAddress[0];
+  GltfInstance  instance   = sceneInfo.instances[instanceID];
+  GltfMesh      mesh       = sceneInfo.meshes[instance.meshIndex];
 
   float3 barycentrics = float3(1 - attr.barycentrics.x - attr.barycentrics.y, attr.barycentrics.x, attr.barycentrics.y);
 

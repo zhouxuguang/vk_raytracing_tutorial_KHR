@@ -7,3 +7,6 @@ setup_rt_tutorial_sample(
     USE_RT_COMMON
     INCLUDE_H_SLANG_FILES
 ) 
+
+# Extra link
+target_link_libraries(11_shader_execution_reorder PRIVATE nvpro2::nvgpu_monitor)

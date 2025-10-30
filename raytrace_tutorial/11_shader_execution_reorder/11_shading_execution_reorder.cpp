@@ -43,6 +43,13 @@
 #include <fmt/format.h>
 #include "shaders/shaderio.h"
 
+// Elements to monitor the GPU and profiling
+#include <nvapp/elem_profiler.hpp>
+#include <nvgpu_monitor/elem_gpu_monitor.hpp>
+#include <nvutils/profiler.hpp>
+#include <nvvk/profiler_vk.hpp>
+
+
 // Pre-compiled shaders
 #include "_autogen/sky_simple.slang.h"
 #include "_autogen/tonemapper.slang.h"
@@ -50,6 +57,8 @@
 
 // Common base class (see 02_basic)
 #include "common/rt_base.hpp"
+
+nvutils::ProfilerManager g_profilerManager;  // #PROFILER
 
 class RtShadingExecutionReorder : public RtBase
 {
@@ -69,6 +78,14 @@ public:
     prop2.pNext = &m_reorderProperties;
     vkGetPhysicalDeviceProperties2(app->getPhysicalDevice(), &prop2);
     RtBase::onAttach(app);
+
+    // ===== Profiling & Performance =====
+    {
+      SCOPED_TIMER("Profiler");
+      m_profilerTimeline = g_profilerManager.createTimeline({.name = "Primary Timeline"});
+      m_profilerGpuTimer.init(m_profilerTimeline, m_app->getDevice(), m_app->getPhysicalDevice(),
+                              m_app->getQueue(0).familyIndex, false);
+    }
   }
 
 
@@ -133,11 +150,22 @@ public:
       resetFrame();  // Reset frame count if max frames is changed
   }
 
+  void onRender(VkCommandBuffer cmd) override
+  {
+    m_profilerTimeline->frameAdvance();  // #PROFILER
+    auto sectionID = m_profilerGpuTimer.cmdFrameSection(cmd, __FUNCTION__);
+    RtBase::onRender(cmd);
+  }
+
+
   // Destroy the resources created for this sample
   void sampleDestroy() override
   {
     m_allocator.destroyBuffer(m_bHeatStats);
     m_bHeatStats = {};
+    // #PROFILER
+    m_profilerGpuTimer.deinit();
+    g_profilerManager.destroyTimeline(m_profilerTimeline);
   }
 
   void createScene() override
@@ -400,12 +428,45 @@ public:
     RtBase::onResize(cmd, size);
   }
 
+  //--------------------------------------------------------------------------------------------------
+  // Create the top level acceleration structures, referencing all BLAS
+  // !!! The change is simply the instanceCustomIndex to use the material index !!!
+  void createTopLevelAS() override
+  {
+    SCOPED_TIMER(__FUNCTION__);
+
+    // Prepare instance data for TLAS
+    std::vector<VkAccelerationStructureInstanceKHR> tlasInstances;
+    tlasInstances.reserve(m_sceneResource.instances.size());
+    const VkGeometryInstanceFlagsKHR flags{VK_GEOMETRY_INSTANCE_TRIANGLE_CULL_DISABLE_BIT_NV};
+
+    for(const shaderio::GltfInstance& instance : m_sceneResource.instances)
+    {
+      VkAccelerationStructureInstanceKHR ray_inst{};
+      ray_inst.transform           = nvvk::toTransformMatrixKHR(instance.transform);  // Position of the instance
+      ray_inst.instanceCustomIndex = instance.materialIndex;                          // gl_InstanceCustomIndexEXT
+      ray_inst.accelerationStructureReference         = m_asBuilder.blasSet[instance.meshIndex].address;
+      ray_inst.instanceShaderBindingTableRecordOffset = 0;  // We will use the same hit group for all objects
+      ray_inst.flags                                  = flags;
+      ray_inst.mask                                   = 0xFF;
+      tlasInstances.emplace_back(ray_inst);
+    }
+
+    // Build the top-level acceleration structure
+    m_asBuilder.tlasSubmitBuildAndWait(tlasInstances, VK_BUILD_ACCELERATION_STRUCTURE_PREFER_FAST_TRACE_BIT_KHR);
+  }
+
 
 private:
   bool         m_enableSER   = true;   // SER enabled by default
   int          m_maxFrames   = 10000;  // Maximum number of frames for accumulation
   bool         m_showHeatmap = false;  // Show heatmap in UI
   nvvk::Buffer m_bHeatStats;
+
+  // Profiler
+  nvutils::ProfilerTimeline* m_profilerTimeline{};  // Timeline profiler
+  nvvk::ProfilerGpuTimer     m_profilerGpuTimer{};  // GPU profiler
+
 
   VkPhysicalDeviceRayTracingInvocationReorderPropertiesNV m_reorderProperties{
       VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_INVOCATION_REORDER_PROPERTIES_NV};
@@ -472,22 +533,36 @@ int main(int argc, char** argv)
   appInfo.queues         = vkContext->getQueueInfos();
   appInfo.vSync          = false;  // To show the speed gain
 
+  // Setting up the layout of the application
+  appInfo.dockSetup = [](ImGuiID viewportID) {
+    ImGuiID leftPane = ImGui::DockBuilderSplitNode(viewportID, ImGuiDir_Left, 0.25F, nullptr, &viewportID);
+    ImGuiID downPane = ImGui::DockBuilderSplitNode(leftPane, ImGuiDir_Down, 0.35F, nullptr, &leftPane);
+    ImGui::DockBuilderDockWindow("Settings", leftPane);
+    ImGui::DockBuilderDockWindow("NVML Monitor", downPane);
+    ImGui::DockBuilderDockWindow("Profiler", downPane);
+  };
+
   // Create the application
   nvapp::Application application;
   application.init(appInfo);
 
   // Elements added to the application
-  auto tutorial    = std::make_shared<RtShadingExecutionReorder>();
-  auto elemCamera  = std::make_shared<nvapp::ElementCamera>();
-  auto windowTitle = std::make_shared<nvapp::ElementDefaultWindowTitle>();
-  auto windowMenu  = std::make_shared<nvapp::ElementDefaultMenu>();
-  auto camManip    = tutorial->getCameraManipulator();
+  auto tutorial       = std::make_shared<RtShadingExecutionReorder>();
+  auto elemCamera     = std::make_shared<nvapp::ElementCamera>();
+  auto windowTitle    = std::make_shared<nvapp::ElementDefaultWindowTitle>();
+  auto windowMenu     = std::make_shared<nvapp::ElementDefaultMenu>();
+  auto elemGpuMonitor = std::make_shared<nvgpu_monitor::ElementGpuMonitor>();
+  auto elemProfiler   = std::make_shared<nvapp::ElementProfiler>(&g_profilerManager);
+
+  auto camManip = tutorial->getCameraManipulator();
   elemCamera->setCameraManipulator(camManip);
 
   // Add elements
   application.addElement(windowMenu);
   application.addElement(windowTitle);
   application.addElement(elemCamera);
+  application.addElement(elemGpuMonitor);
+  application.addElement(elemProfiler);
   application.addElement(tutorial);
 
   application.run();
