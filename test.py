@@ -22,6 +22,9 @@ EXECUTABLES = [
     ("13_callable_shader", ["--headless"]),
     ("14_animation", ["--headless"]),
     ("15_micro_maps_opacity", ["--headless"]),
+    ("16_ray_query", ["--headless"]),
+    ("17_ray_query_screenspace", ["--headless"]),
+    ("18_swept_spheres", ["--headless"]),
 ]
 
 def run_executable(executable_path, args):
