@@ -159,7 +159,7 @@ void traceRay(RayDesc ray, inout HitPayload payload, int depth)
     uint coherenceHint = (materialID << 3) | (uint(depth) & 7);
     ReorderThread(hitObj, coherenceHint, 10);
 
-    float3 barycentrics = hitObj.GetAttributes<float3>();
+    float2 barycentrics = hitObj.GetAttributes<float2>();
 
     RayDesc rayDesc = hitObj.GetRayDesc();
     payload.hitT    = rayDesc.TMax;
