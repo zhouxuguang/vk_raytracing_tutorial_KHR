@@ -200,7 +200,21 @@ void textureVoronoiMain(inout TextureCallablePayload payload)
 
 float2 random2(float2 p)
 {
-  return fract(sin(float2(dot(p, float2(127.1, 311.7)), dot(p, float2(269.5, 183.3)))) * 43758.5453);
+  uint3 v = uint3(asuint(p), 0);
+  // PCG3D from https://github.com/markjarzynski/pcg3d.
+  // Although PCG2D may look more appropriate, it turns out PCG3D is
+  // higher-quality and slightly faster when used in this way (and the
+  // compiler removes the extra assignment to z at the end).
+  v = v * 1664525u + 1013904223u;
+  v.x += v.y * v.z;
+  v.y += v.z * v.x;
+  v.z += v.x * v.y;
+  v ^= v >> 16u;
+  v.x += v.y * v.z;
+  v.y += v.z * v.x;
+  v.z += v.x * v.y;
+  // Simple conversion back to unorm
+  return float2(v.xy) * 0x1p-32;
 }
 
 //-----------------------------------------------------------------------
@@ -306,7 +320,7 @@ void rgenMain()
   float2 launchID   = (float2)DispatchRaysIndex().xy;
   float2 launchSize = (float2)DispatchRaysDimensions().xy;
 
-  GltfSceneInfo sceneInfo = pushConst.sceneInfoAddress[0];
+  GltfSceneInfo* sceneInfo = pushConst.sceneInfoAddress;
 
   const uint   rayFlags   = 0;
   const float2 clipCoords = launchID / launchSize * 2.0 - 1.0;
@@ -487,7 +501,7 @@ void rchitMain(inout HitPayload payload, in BuiltInTriangleIntersectionAttribute
 [shader("miss")]
 void rmissMain(inout HitPayload payload)
 {
-  GltfSceneInfo sceneInfo = pushConst.sceneInfoAddress[0];
+  GltfSceneInfo* sceneInfo = pushConst.sceneInfoAddress;
 
   if(sceneInfo.useSky == 1)
   {

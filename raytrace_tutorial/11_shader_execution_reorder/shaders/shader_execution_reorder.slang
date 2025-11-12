@@ -230,7 +230,7 @@ float3 pathTrace(RayDesc ray, inout uint seed, inout HitPayload payload)
     // Hitting the environment, then exit
     if(payload.hitT == INFINITE)
     {
-      GltfSceneInfo sceneInfo = pushConst.sceneInfoAddress[0];
+      GltfSceneInfo* sceneInfo = pushConst.sceneInfoAddress;
 
       float3 sky_color = evalSimpleSky(sceneInfo.skySimpleParam, ray.Direction);
       return radiance + (sky_color * throughput);
@@ -339,7 +339,7 @@ float3 samplePixel(inout uint seed, inout HitPayload payload)
   float2 launchID   = (float2)DispatchRaysIndex().xy;
   float2 launchSize = float2(DispatchRaysDimensions().xy);
 
-  GltfSceneInfo sceneInfo = pushConst.sceneInfoAddress[0];
+  GltfSceneInfo* sceneInfo = pushConst.sceneInfoAddress;
 
   // Subpixel jitter: send the ray through a different position inside the pixel each time, to provide antialiasing.
   const float2 subpixelJitter = pushConst.frame == 0 ? float2(0.5f, 0.5f) : float2(rand(seed), rand(seed));

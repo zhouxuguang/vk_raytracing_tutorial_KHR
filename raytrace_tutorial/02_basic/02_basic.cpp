@@ -901,9 +901,14 @@ public:
       VkCommandBuffer cmd = m_app->createTempCmdBuffer();
 
       // Create the instances buffer and upload the instance data
+      // Required alignment for instance data
+      // See: https://docs.vulkan.org/spec/latest/chapters/accelstructures.html#VUID-vkCmdBuildAccelerationStructuresKHR-pInfos-03717
+      constexpr size_t         instanceAlignment = 16;
+      VmaAllocationCreateFlags allocFlags        = {};
       NVVK_CHECK(m_allocator.createBuffer(
           tlasInstancesBuffer, std::span<VkAccelerationStructureInstanceKHR const>(tlasInstances).size_bytes(),
-          VK_BUFFER_USAGE_2_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR | VK_BUFFER_USAGE_2_SHADER_DEVICE_ADDRESS_BIT));
+          VK_BUFFER_USAGE_2_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR | VK_BUFFER_USAGE_2_SHADER_DEVICE_ADDRESS_BIT,
+          VMA_MEMORY_USAGE_AUTO, allocFlags, instanceAlignment));
       NVVK_CHECK(m_stagingUploader.appendBuffer(tlasInstancesBuffer, 0,
                                                 std::span<VkAccelerationStructureInstanceKHR const>(tlasInstances)));
       NVVK_DBG_NAME(tlasInstancesBuffer.buffer);

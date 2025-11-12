@@ -91,7 +91,7 @@ void rgenMain()
   float2 launchID   = (float2)DispatchRaysIndex().xy;
   float2 launchSize = (float2)DispatchRaysDimensions().xy;
 
-  GltfSceneInfo sceneInfo = pushConst.sceneInfoAddress[0];
+  GltfSceneInfo* sceneInfo = pushConst.sceneInfoAddress;
 
   const uint   rayFlags   = 0;
   const float2 clipCoords = launchID / launchSize * 2.0 - 1.0;
@@ -140,7 +140,7 @@ float testShadow(float3 worldPos, float3 worldNormal, float3 lightDirection, Glt
 //-----------------------------------------------------------------------
 // SHARED LIGHTING FUNCTION
 //-----------------------------------------------------------------------
-float3 calculateLighting(float3 worldPos, float3 worldNormal, float3 albedo, float metallic, float roughness, GltfSceneInfo sceneInfo)
+float3 calculateLighting(float3 worldPos, float3 worldNormal, float3 albedo, float metallic, float roughness, GltfSceneInfo* sceneInfo)
 {
   GltfPunctual light = sceneInfo.punctualLights[0];  // Assuming we only use the first light for simplicity
 
@@ -210,7 +210,7 @@ void rchitMain(inout HitPayload payload, in BuiltInTriangleIntersectionAttribute
   uint   meshID       = InstanceID();
   uint   triID        = PrimitiveIndex();
 
-  GltfSceneInfo         sceneInfo = pushConst.sceneInfoAddress[0];
+  GltfSceneInfo*        sceneInfo = pushConst.sceneInfoAddress;
   GltfInstance          instance  = sceneInfo.instances[instanceID];
   GltfMesh              mesh      = sceneInfo.meshes[instance.meshIndex];
   GltfMetallicRoughness material  = sceneInfo.materials[instance.materialIndex];
@@ -247,7 +247,7 @@ void rchitMain(inout HitPayload payload, in BuiltInTriangleIntersectionAttribute
 [shader("closesthit")]
 void rchitMainGrass(inout HitPayload payload)
 {
-  GltfSceneInfo sceneInfo = pushConst.sceneInfoAddress[0];
+  GltfSceneInfo* sceneInfo = pushConst.sceneInfoAddress;
 
   // Calculate world position
   float3 worldPos = WorldRayOrigin() + WorldRayDirection() * RayTCurrent();
@@ -296,7 +296,7 @@ void rchitMainSpheres(inout HitPayload payload)
 {
   uint primitiveID = PrimitiveIndex();
 
-  GltfSceneInfo sceneInfo = pushConst.sceneInfoAddress[0];
+  GltfSceneInfo* sceneInfo = pushConst.sceneInfoAddress;
 
   // Calculate world position
   float3 worldPos = WorldRayOrigin() + WorldRayDirection() * RayTCurrent();
@@ -330,7 +330,7 @@ void rchitMainSpheres(inout HitPayload payload)
 [shader("closesthit")]
 void rchitMainChains(inout HitPayload payload)
 {
-  GltfSceneInfo sceneInfo = pushConst.sceneInfoAddress[0];
+  GltfSceneInfo* sceneInfo = pushConst.sceneInfoAddress;
 
   // Calculate world position of the ray hit
   float3 worldPos = WorldRayOrigin() + WorldRayDirection() * RayTCurrent();
@@ -377,7 +377,7 @@ void rchitMainChains(inout HitPayload payload)
 [shader("miss")]
 void rmissMain(inout HitPayload payload)
 {
-  GltfSceneInfo sceneInfo = pushConst.sceneInfoAddress[0];
+  GltfSceneInfo* sceneInfo = pushConst.sceneInfoAddress;
 
   if(sceneInfo.useSky == 1)
   {

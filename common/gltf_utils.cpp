@@ -76,7 +76,6 @@ void nvsamples::primitiveMeshToResource(GltfSceneResource&            sceneResou
   mesh.triMesh.indices = {.offset     = static_cast<uint32_t>(verticesSize),
                           .count      = static_cast<uint32_t>(primMesh.triangles.size() * 3),  // 3 indices per triangle
                           .byteStride = sizeof(uint32_t)};
-  mesh.indexType       = VK_INDEX_TYPE_UINT32;  // Assuming uint32_t indices
 
   // Set the buffer address and index type
   mesh.gltfBuffer = (uint8_t*)gltfData.address;

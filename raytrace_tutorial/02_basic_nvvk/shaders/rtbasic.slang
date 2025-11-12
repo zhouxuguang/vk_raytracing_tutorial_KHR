@@ -189,7 +189,7 @@ void rgenMain()
   float2 launchSize = (float2)DispatchRaysDimensions().xy; // Image size (width,height)
 
   // Retrieve scene information from push constants
-  GltfSceneInfo sceneInfo = pushConst.sceneInfoAddress[0];
+  GltfSceneInfo* sceneInfo = pushConst.sceneInfoAddress;
 
   // Set ray tracing flags (0 = no special flags)
   const uint   rayFlags   = 0;
@@ -303,7 +303,7 @@ void rchitMain(inout HitPayload payload, in BuiltInTriangleIntersectionAttribute
 [shader("miss")]
 void rmissMain(inout HitPayload payload)
 {
-  GltfSceneInfo sceneInfo = pushConst.sceneInfoAddress[0];
+  GltfSceneInfo* sceneInfo = pushConst.sceneInfoAddress;
 
   // Check if sky system is enabled
   if(sceneInfo.useSky == 1)

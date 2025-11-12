@@ -290,7 +290,7 @@ bool traceShadow(RayDesc ray)
 // LIGHT PROCESSING - Handles sky override, distance attenuation, and spot light cone effects
 //-----------------------------------------------------------------------
 // Processes light properties based on type and applies appropriate attenuation
-GltfPunctual processLight(GltfSceneInfo sceneInfo, float3 worldPos)
+GltfPunctual processLight(GltfSceneInfo* sceneInfo, float3 worldPos)
 {
   // Start with the first punctual light in the scene (simplified for tutorial)
   GltfPunctual light = sceneInfo.punctualLights[0];
@@ -343,7 +343,7 @@ GltfPunctual processLight(GltfSceneInfo sceneInfo, float3 worldPos)
 // Returns the radiance (color) along the given ray path
 float3 pathTrace(RayDesc ray, inout uint seed)
 {
-  GltfSceneInfo sceneInfo = pushConst.sceneInfoAddress[0];
+  GltfSceneInfo* sceneInfo = pushConst.sceneInfoAddress;
   HitPayload    payload;
 
   // Path tracing state variables
@@ -486,7 +486,7 @@ float3 pathTrace(RayDesc ray, inout uint seed)
 // Sample a single pixel with subpixel jittering for anti-aliasing
 float3 samplePixel(inout uint seed, float2 launchID, float2 launchSize)
 {
-  GltfSceneInfo sceneInfo = pushConst.sceneInfoAddress[0];
+  GltfSceneInfo* sceneInfo = pushConst.sceneInfoAddress;
 
   // ANTI-ALIASING: Subpixel jittering for temporal supersampling
   // First frame uses pixel center, subsequent frames use random subpixel positions

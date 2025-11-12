@@ -94,7 +94,7 @@ void rgenMain()
   float2 launchID   = (float2)DispatchRaysIndex().xy;
   float2 launchSize = (float2)DispatchRaysDimensions().xy;
 
-  GltfSceneInfo sceneInfo = pushConst.sceneInfoAddress[0];
+  GltfSceneInfo* sceneInfo = pushConst.sceneInfoAddress;
 
   const uint   rayFlags   = 0;
   const float2 clipCoords = launchID / launchSize * 2.0 - 1.0;
@@ -290,7 +290,7 @@ void rchitMain3(inout HitPayload payload, in BuiltInTriangleIntersectionAttribut
 [shader("miss")]
 void rmissMain(inout HitPayload payload)
 {
-  GltfSceneInfo sceneInfo = pushConst.sceneInfoAddress[0];
+  GltfSceneInfo* sceneInfo = pushConst.sceneInfoAddress;
 
   if(sceneInfo.useSky == 1)
   {

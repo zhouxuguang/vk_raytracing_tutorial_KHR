@@ -66,7 +66,7 @@ VSout vertexMain(VSin input, uint vertexIndex: SV_VertexID)
 {
   int instanceIndex = pushConst.instanceIndex;
 
-  GltfSceneInfo sceneInfo = pushConst.sceneInfoAddress[0];
+  GltfSceneInfo* sceneInfo = pushConst.sceneInfoAddress;
 
   GltfInstance          instance = sceneInfo.instances[instanceIndex];
   GltfMesh              meshIo   = sceneInfo.meshes[instance.meshIndex];

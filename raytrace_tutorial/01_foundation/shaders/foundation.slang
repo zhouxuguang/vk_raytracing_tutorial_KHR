@@ -66,11 +66,10 @@ VSout vertexMain(VSin input, uint vertexIndex: SV_VertexID)
 {
   int instanceIndex = pushConst.instanceIndex;
 
-  GltfSceneInfo sceneInfo = pushConst.sceneInfoAddress[0];
+  GltfSceneInfo* sceneInfo = pushConst.sceneInfoAddress;
 
-  GltfInstance          instance = sceneInfo.instances[instanceIndex];
-  GltfMesh              meshIo   = sceneInfo.meshes[instance.meshIndex];
-  GltfMetallicRoughness material = sceneInfo.materials[instance.materialIndex];
+  GltfInstance instance = sceneInfo.instances[instanceIndex];
+  GltfMesh     meshIo   = sceneInfo.meshes[instance.meshIndex];
 
   // Retrieve the data
   float3 posMesh  = getAttribute<float3>(meshIo.gltfBuffer, meshIo.triMesh.positions, vertexIndex);
@@ -161,7 +160,6 @@ PSout fragmentMain(VSout stage)
   }
   // Add ambient to final color
   color += ambient * albedo * 0.025;
-
 
   PSout output;
   output.color = float4(clamp(color, float3(0.0), float3(1.0)), 1.0);

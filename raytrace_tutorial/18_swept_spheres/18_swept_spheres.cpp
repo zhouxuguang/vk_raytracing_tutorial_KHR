@@ -258,33 +258,37 @@ public:
       eRaygen,
       eMiss,
       eClosestHit,
-      eClosestHitGrass,
+      eLssUnsupportedShaderGroupCount,  // If LSS is unsupported, then we create an SBT with fewer shaders.
+      eClosestHitGrass = eLssUnsupportedShaderGroupCount,
       eClosestHitSpheres,
       eClosestHitChains,
       eShaderGroupCount
     };
-    std::array<VkPipelineShaderStageCreateInfo, eShaderGroupCount> stages{};
+    std::vector<VkPipelineShaderStageCreateInfo> stages(m_extensionSupported ? eShaderGroupCount : eLssUnsupportedShaderGroupCount);
     for(auto& s : stages)
       s.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 
-    stages[eRaygen].pNext            = &shaderCode;
-    stages[eRaygen].pName            = "rgenMain";
-    stages[eRaygen].stage            = VK_SHADER_STAGE_RAYGEN_BIT_KHR;
-    stages[eMiss].pNext              = &shaderCode;
-    stages[eMiss].pName              = "rmissMain";
-    stages[eMiss].stage              = VK_SHADER_STAGE_MISS_BIT_KHR;
-    stages[eClosestHit].pNext        = &shaderCode;
-    stages[eClosestHit].pName        = "rchitMain";
-    stages[eClosestHit].stage        = VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR;
-    stages[eClosestHitGrass].pNext   = &shaderCode;
-    stages[eClosestHitGrass].pName   = "rchitMainGrass";
-    stages[eClosestHitGrass].stage   = VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR;
-    stages[eClosestHitSpheres].pNext = &shaderCode;
-    stages[eClosestHitSpheres].pName = "rchitMainSpheres";
-    stages[eClosestHitSpheres].stage = VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR;
-    stages[eClosestHitChains].pNext  = &shaderCode;
-    stages[eClosestHitChains].pName  = "rchitMainChains";
-    stages[eClosestHitChains].stage  = VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR;
+    stages[eRaygen].pNext     = &shaderCode;
+    stages[eRaygen].pName     = "rgenMain";
+    stages[eRaygen].stage     = VK_SHADER_STAGE_RAYGEN_BIT_KHR;
+    stages[eMiss].pNext       = &shaderCode;
+    stages[eMiss].pName       = "rmissMain";
+    stages[eMiss].stage       = VK_SHADER_STAGE_MISS_BIT_KHR;
+    stages[eClosestHit].pNext = &shaderCode;
+    stages[eClosestHit].pName = "rchitMain";
+    stages[eClosestHit].stage = VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR;
+    if(m_extensionSupported)
+    {
+      stages[eClosestHitGrass].pNext   = &shaderCode;
+      stages[eClosestHitGrass].pName   = "rchitMainGrass";
+      stages[eClosestHitGrass].stage   = VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR;
+      stages[eClosestHitSpheres].pNext = &shaderCode;
+      stages[eClosestHitSpheres].pName = "rchitMainSpheres";
+      stages[eClosestHitSpheres].stage = VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR;
+      stages[eClosestHitChains].pNext  = &shaderCode;
+      stages[eClosestHitChains].pName  = "rchitMainChains";
+      stages[eClosestHitChains].stage  = VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR;
+    }
 
     // Shader groups
     VkRayTracingShaderGroupCreateInfoKHR group{VK_STRUCTURE_TYPE_RAY_TRACING_SHADER_GROUP_CREATE_INFO_KHR};
@@ -310,20 +314,23 @@ public:
     group.closestHitShader = eClosestHit;
     shaderGroups.push_back(group);
 
-    // Closest hit shader for grass LSS
-    group.type             = VK_RAY_TRACING_SHADER_GROUP_TYPE_TRIANGLES_HIT_GROUP_KHR;
-    group.closestHitShader = eClosestHitGrass;
-    shaderGroups.push_back(group);
+    if(m_extensionSupported)
+    {
+      // Closest hit shader for grass LSS
+      group.type             = VK_RAY_TRACING_SHADER_GROUP_TYPE_TRIANGLES_HIT_GROUP_KHR;
+      group.closestHitShader = eClosestHitGrass;
+      shaderGroups.push_back(group);
 
-    // Closest hit shader for standalone spheres
-    group.type             = VK_RAY_TRACING_SHADER_GROUP_TYPE_TRIANGLES_HIT_GROUP_KHR;
-    group.closestHitShader = eClosestHitSpheres;
-    shaderGroups.push_back(group);
+      // Closest hit shader for standalone spheres
+      group.type             = VK_RAY_TRACING_SHADER_GROUP_TYPE_TRIANGLES_HIT_GROUP_KHR;
+      group.closestHitShader = eClosestHitSpheres;
+      shaderGroups.push_back(group);
 
-    // Closest hit shader for chains LSS
-    group.type             = VK_RAY_TRACING_SHADER_GROUP_TYPE_TRIANGLES_HIT_GROUP_KHR;
-    group.closestHitShader = eClosestHitChains;
-    shaderGroups.push_back(group);
+      // Closest hit shader for chains LSS
+      group.type             = VK_RAY_TRACING_SHADER_GROUP_TYPE_TRIANGLES_HIT_GROUP_KHR;
+      group.closestHitShader = eClosestHitChains;
+      shaderGroups.push_back(group);
+    }
 
     // Pipeline flags for swept spheres extension
     VkPipelineCreateFlags2CreateInfoKHR pipelineFlags2{VK_STRUCTURE_TYPE_PIPELINE_CREATE_FLAGS_2_CREATE_INFO_KHR};

@@ -42,7 +42,7 @@ struct TutoPushConstant
   GltfSceneInfo* sceneInfoAddress;           // Address of the scene information buffer
   float2         metallicRoughnessOverride;  // Metallic and roughness override values
   float          lightRadius = 1.0f;         // Area light radius
-  uint16_t       maxDepth    = 3;            // Max ray depth
+  uint32_t       maxDepth    = 3;            // Max ray depth
   uint32_t       frame       = 0;            // Current frame index
 };
 

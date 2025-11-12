@@ -76,6 +76,10 @@ struct GltfMesh
   uint8_t*     gltfBuffer = nullptr;  // Buffer to the data (index, position, normal, ...)
   TriangleMesh triMesh;               // Mesh data
   int          indexType;             // Index type (uint16_t or uint32_t)
+  // Workaround for an issue on a Radeon(TM) RX 7900 XT, driver version
+  // 32.0.22021.1009, where although GltfMesh has an ArrayStride of 88 (due to
+  // the pointer), the GPU treats it as though it has a stride of 84.
+  int padWorkaround;
 };
 
 enum GltfLightType
