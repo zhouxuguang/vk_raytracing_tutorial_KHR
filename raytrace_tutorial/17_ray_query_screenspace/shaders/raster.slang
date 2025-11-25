@@ -65,7 +65,7 @@ __generic<T : IFloat> T getAttribute(uint8_t* dataBufferAddress, BufferView buff
 
 // Vertex  Shader
 [shader("vertex")]
-VSout vertexMain(VSin input, uint vertexIndex: SV_VertexID)
+VSout vertexMain(uint vertexIndex: SV_VertexID)
 {
   int instanceIndex = pushConst.instanceIndex;
 
