@@ -139,6 +139,7 @@ SER provides significant performance gains in scenarios with:
 This tutorial requires:
 
 - `VK_NV_RAY_TRACING_INVOCATION_REORDER_EXTENSION_NAME`: Enables SER functionality
+- `VK_KHR_shader_clock`: Enables `getRealtimeClock()` in shaders for heatmap timing measurements
 
 ### Scene Design for Divergence
 

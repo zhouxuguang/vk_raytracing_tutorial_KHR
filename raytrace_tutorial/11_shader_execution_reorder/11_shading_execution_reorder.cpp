@@ -500,6 +500,10 @@ int main(int argc, char** argv)
   VkPhysicalDeviceRayTracingInvocationReorderFeaturesNV serFeature{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_INVOCATION_REORDER_FEATURES_NV};
   serFeature.rayTracingInvocationReorder = VK_TRUE;
 
+  // Add shader clock feature for heatmap timing (getRealtimeClock in shader)
+  VkPhysicalDeviceShaderClockFeaturesKHR shaderClockFeature{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_CLOCK_FEATURES_KHR};
+  shaderClockFeature.shaderDeviceClock = VK_TRUE;
+
   nvvk::ContextInitInfo vkSetup{
       .instanceExtensions = {VK_EXT_DEBUG_UTILS_EXTENSION_NAME},
       .deviceExtensions =
@@ -510,6 +514,7 @@ int main(int argc, char** argv)
               {VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME, &rtPipelineFeature},    // To use vkCmdTraceRaysKHR
               {VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME},                    // Required by ray tracing pipeline
               {VK_NV_RAY_TRACING_INVOCATION_REORDER_EXTENSION_NAME, &serFeature},  // For SER support
+              {VK_KHR_SHADER_CLOCK_EXTENSION_NAME, &shaderClockFeature},           // For shader clock (heatmap)
           },
   };
 
