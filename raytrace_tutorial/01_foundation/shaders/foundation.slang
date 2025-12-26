@@ -130,7 +130,7 @@ PSout fragmentMain(VSout stage)
 
   // Get base color from material or texture
   float3 albedo = material.baseColorFactor.xyz;
-  if(material.baseColorTextureIndex > 0)
+  if(material.baseColorTextureIndex > -1)
   {
     albedo *= textures[material.baseColorTextureIndex].Sample(stage.worldTexCoord).xyz;
   }

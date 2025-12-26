@@ -222,7 +222,7 @@ void rchitMain(inout HitPayload payload, in BuiltInTriangleIntersectionAttribute
 
   // Get base color from material or texture
   float3 albedo = material.baseColorFactor.xyz;
-  if(material.baseColorTextureIndex > 0)
+  if(material.baseColorTextureIndex > -1)
   {
     albedo *= textures[material.baseColorTextureIndex].SampleLevel(worldTexCoord, 0).xyz;
   }

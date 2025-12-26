@@ -264,7 +264,7 @@ void rchitMain(inout HitPayload payload, in BuiltInTriangleIntersectionAttribute
   float  roughness = material.roughnessFactor;      // Surface roughness (0=smooth, 1=rough)
   
   // Sample albedo texture if available
-  if(material.baseColorTextureIndex > 0)
+  if(material.baseColorTextureIndex > -1)
   {
     albedo *= textures[material.baseColorTextureIndex].SampleLevel(worldTexCoord, 0).xyz;
   }

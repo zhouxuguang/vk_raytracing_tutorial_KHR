@@ -491,7 +491,7 @@ public:
     // Update the descriptor set with the textures
     nvvk::WriteSetContainer write{};
     VkWriteDescriptorSet    allTextures =
-        m_descPack.makeWrite(shaderio::BindingPoints::eTextures, 0, 1, uint32_t(m_textures.size()));
+        m_descPack.makeWrite(shaderio::BindingPoints::eTextures, 0, 0, uint32_t(m_textures.size()));
     nvvk::Image* allImages = m_textures.data();
     write.append(allTextures, allImages);
     vkUpdateDescriptorSets(m_app->getDevice(), write.size(), write.data(), 0, nullptr);
