@@ -21,6 +21,7 @@ set(TUTO_DIR "${CMAKE_CURRENT_SOURCE_DIR}/raytrace_tutorial")
 add_subdirectory(common)
 
 add_subdirectory(raytrace_tutorial/01_foundation)
+add_subdirectory(raytrace_tutorial/01_foundation_copy)
 add_subdirectory(raytrace_tutorial/02_basic)
 add_subdirectory(raytrace_tutorial/02_basic_nvvk)
 add_subdirectory(raytrace_tutorial/03_any_hit)
